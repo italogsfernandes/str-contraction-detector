@@ -121,7 +121,7 @@
                             <property name="WidthRequest">150</property>
                             <property name="CanFocus">True</property>
                             <property name="Lower">0.1</property>
-                            <property name="Upper">20</property>
+                            <property name="Upper">50</property>
                             <property name="PageIncrement">0.1</property>
                             <property name="StepIncrement">1</property>
                             <property name="Value">1</property>

@@ -17,6 +17,7 @@ public partial class MainWindow: Gtk.Window
 		Rectangle,	//Retangulo selecionado
 		Circle		//Circulo selecionado
 	}
+
 	public Estado estado_atual;
 	public Ferramenta ferramenta_atual;
 	public int desenhar;
@@ -24,6 +25,7 @@ public partial class MainWindow: Gtk.Window
 	public Pen pincel;
 	public PointF pontoAnterior;
 	public PointF primeiraPosicao;
+
 	public MainWindow () : base (Gtk.WindowType.Toplevel)
 	{
 		Build ();
@@ -48,6 +50,8 @@ public partial class MainWindow: Gtk.Window
 
 	protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 	{
+		pincel.Dispose ();
+		graphic_area.Dispose ();
 		Application.Quit ();
 		a.RetVal = true;
 	}
@@ -125,12 +129,12 @@ public partial class MainWindow: Gtk.Window
 					(float)(args.Event.X - drawingareaDesenho.Allocation.X),
 					(float)(args.Event.Y - drawingareaDesenho.Allocation.Y));
 
-				graphic_area.FillRectangle (
-					new Pen (System.Drawing.Color.White, pincel.Width).Brush,
-					primeiraPosicao.X,
-					primeiraPosicao.Y,
-					pontoAnterior.X - primeiraPosicao.X,
-					pontoAnterior.Y - primeiraPosicao.Y);
+//				graphic_area.FillRectangle (
+//					new Pen (System.Drawing.Color.White, pincel.Width).Brush,
+//					primeiraPosicao.X,
+//					primeiraPosicao.Y,
+//					pontoAnterior.X - primeiraPosicao.X,
+//					pontoAnterior.Y - primeiraPosicao.Y);
 
 //				graphic_area.DrawRectangle (
 //					pincel,
@@ -139,13 +143,33 @@ public partial class MainWindow: Gtk.Window
 //					pontoAtual.X - primeiraPosicao.X,
 //					pontoAtual.Y - primeiraPosicao.Y);
 
-				graphic_area.FillRectangle (
-					pincel.Brush,
-					primeiraPosicao.X,
-					primeiraPosicao.Y,
-					pontoAtual.X - primeiraPosicao.X,
-					pontoAtual.Y - primeiraPosicao.Y
-				);
+//				graphic_area.FillRectangle (
+//					pincel.Brush,
+//					primeiraPosicao.X,
+//					primeiraPosicao.Y,
+//					pontoAtual.X - primeiraPosicao.X,
+//					pontoAtual.Y - primeiraPosicao.Y
+//				);
+
+				graphic_area.Clear (System.Drawing.Color.White);
+				System.Drawing.Rectangle desired_rectangle;
+				desired_rectangle = new System.Drawing.Rectangle (
+					Convert.ToInt32 (primeiraPosicao.X),
+					Convert.ToInt32 (primeiraPosicao.Y),
+					Convert.ToInt32 (pontoAtual.X - primeiraPosicao.X),
+					Convert.ToInt32 (pontoAtual.Y - primeiraPosicao.Y));
+				if (desired_rectangle.Width < 0) {
+					desired_rectangle.Width = Math.Abs (desired_rectangle.Width);
+					desired_rectangle.X = desired_rectangle.X - desired_rectangle.Width;
+				}
+				if (desired_rectangle.Height < 0) {
+					desired_rectangle.Height = Math.Abs (desired_rectangle.Height);
+					desired_rectangle.Y = desired_rectangle.Y - desired_rectangle.Height;
+				}
+
+
+				graphic_area.DrawRectangle (pincel, desired_rectangle);
+
 				pontoAnterior = pontoAtual;
 				break;
 			case Ferramenta.Circle:
@@ -153,12 +177,12 @@ public partial class MainWindow: Gtk.Window
 					(float)(args.Event.X - drawingareaDesenho.Allocation.X),
 					(float)(args.Event.Y - drawingareaDesenho.Allocation.Y));
 
-				graphic_area.FillEllipse (
-					new Pen (System.Drawing.Color.White, pincel.Width).Brush,
-					primeiraPosicao.X,
-					primeiraPosicao.Y,
-					pontoAnterior.X - primeiraPosicao.X,
-					pontoAnterior.Y - primeiraPosicao.Y);
+//				graphic_area.FillEllipse (
+//					new Pen (System.Drawing.Color.White, pincel.Width).Brush,
+//					primeiraPosicao.X,
+//					primeiraPosicao.Y,
+//					pontoAnterior.X - primeiraPosicao.X,
+//					pontoAnterior.Y - primeiraPosicao.Y);
 
 				//				graphic_area.DrawRectangle (
 				//					pincel,
@@ -166,9 +190,9 @@ public partial class MainWindow: Gtk.Window
 				//					primeiraPosicao.Y,
 				//					pontoAtual.X - primeiraPosicao.X,
 				//					pontoAtual.Y - primeiraPosicao.Y);
-
-				graphic_area.FillEllipse(
-					pincel.Brush,
+				graphic_area.Clear (System.Drawing.Color.White);;
+				graphic_area.DrawEllipse(
+					pincel,
 					primeiraPosicao.X,
 					primeiraPosicao.Y,
 					pontoAtual.X - primeiraPosicao.X,

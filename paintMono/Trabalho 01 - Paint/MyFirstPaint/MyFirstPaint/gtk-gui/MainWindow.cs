@@ -58,6 +58,7 @@ public partial class MainWindow
 		this.vbox2.Spacing = 6;
 		// Container child vbox2.Gtk.Box+BoxChild
 		this.hbox2 = new global::Gtk.HBox ();
+		this.hbox2.Name = "hbox2";
 		this.hbox2.Spacing = 6;
 		// Container child hbox2.Gtk.Box+BoxChild
 		this.vbox3 = new global::Gtk.VBox ();
@@ -131,7 +132,7 @@ public partial class MainWindow
 		this.hscaleEspessura.CanFocus = true;
 		this.hscaleEspessura.Name = "hscaleEspessura";
 		this.hscaleEspessura.Adjustment.Lower = 0.1;
-		this.hscaleEspessura.Adjustment.Upper = 20;
+		this.hscaleEspessura.Adjustment.Upper = 50;
 		this.hscaleEspessura.Adjustment.PageIncrement = 0.1;
 		this.hscaleEspessura.Adjustment.StepIncrement = 1;
 		this.hscaleEspessura.Adjustment.Value = 1;
