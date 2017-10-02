@@ -19,6 +19,7 @@ namespace PingPongV1 {
         public bola main_bola; //Bola
         public Graphics double_buffer; //Graphics q manipula o bitmap de buffer
         public Bitmap aux_buffer; //Bitmap utilizado como buffer
+        public int inicio, final;
         #endregion
 
         #region Controles dos players
@@ -145,10 +146,13 @@ namespace PingPongV1 {
 
         #region Timers
         private void timerUpdateBall_Tick(object sender, EventArgs e) {
+            Console.WriteLine("Primeiro: " + DateTime.Now.Millisecond.ToString());
             mover_elementos();
             verificar_colisoes();
             verificar_pontuacao();
             show_items();
+            Console.WriteLine("Segundo: " + DateTime.Now.Millisecond.ToString());
+            Console.WriteLine("------------------------------");
         }
 
         private void timerEspera_Tick(object sender, EventArgs e) {
