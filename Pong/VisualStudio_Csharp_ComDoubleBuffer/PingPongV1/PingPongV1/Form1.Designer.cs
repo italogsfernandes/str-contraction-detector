@@ -49,8 +49,8 @@
             this.panel1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.panel1.BackColor = System.Drawing.Color.Green;
             this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Location = new System.Drawing.Point(12, 94);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(720, 435);
@@ -176,7 +176,7 @@
             // 
             // timerUpdateBall
             // 
-            this.timerUpdateBall.Interval = 1;
+            this.timerUpdateBall.Interval = 50;
             this.timerUpdateBall.Tick += new System.EventHandler(this.timerUpdateBall_Tick);
             // 
             // timerEspera
@@ -189,10 +189,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(741, 548);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.lbPontos2);
             this.Controls.Add(this.lbPontos1);
             this.Controls.Add(this.lbPlacar);
-            this.Controls.Add(this.panel1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
