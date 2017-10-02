@@ -1,0 +1,99 @@
+#:kivy 1.0.9
+
+<PongBola>:
+    size: 50, 50
+    canvas:
+        Color:
+            rgb: 1,1,0
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PongGoleiro>:
+    size: 25, 200
+    canvas:
+        Color:
+            rgb: 0.05,0.05,0.7
+
+        Rectangle:
+            pos:self.pos
+            size:self.size
+
+<PongGame>:
+    ball: pong_ball
+    player1: player_left
+    player2: player_right
+    score1: label_left
+    score2: label_right
+
+    canvas:
+        Color:
+            rgb: 0.3, 0.6, 0.1
+
+        Rectangle:
+            pos: 0, 0
+            size:  self.width, self.height
+
+
+        Color:
+            rgb: 1,1,1
+
+        Rectangle:
+            pos: self.center_x - 5, 0
+            size: 10, self.height
+
+        Ellipse:
+            pos: self.center_x - 20, self.center_y - 20
+            size: 40,40
+
+        Color:
+            rgb: 1,1,0
+
+        Rectangle:
+            pos: 0, 0
+            size: 10, self.height
+
+        Rectangle:
+            pos: self.width - 10, 0
+            size: 10, self.height
+
+        Color:
+            rgb: 1,1,1
+
+        Rectangle:
+            pos: 10, 0
+            size: self.width - 20, 10
+
+        Rectangle:
+            pos: 10, self.height - 10
+            size: self.width - 20, 10
+
+
+
+    Label:
+        id:label_left
+        font_size: 70
+        center_x: root.width / 4
+        top: root.top - 50
+        text: "0"
+
+    Label:
+        id:label_right
+        font_size: 70
+        center_x: root.width * 3 / 4
+        top: root.top - 50
+        text: "0"
+
+    PongBola:
+        id: pong_ball
+        center: self.parent.center
+
+    PongGoleiro:
+        id: player_left
+        x: root.x + 20
+        center_y: root.center_y
+
+    PongGoleiro:
+        id: player_right
+        x: root.width-self.width - 20
+        center_y: root.center_y

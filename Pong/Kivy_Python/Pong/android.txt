@@ -1,0 +1,3 @@
+title=ItaloSTR
+author=Italo
+orientation=landscape
