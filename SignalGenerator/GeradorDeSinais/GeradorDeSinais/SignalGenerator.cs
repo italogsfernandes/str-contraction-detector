@@ -107,13 +107,13 @@ namespace GeradorDeSinais
             switch (forma_da_onda)
             {
                 case WaveForm.Senoidal:
-                    return getSenoidalValue_angle(delta_time);
+                    return getSenoidalValue_angle(delta_rad);
                 case WaveForm.Quadrada:
-                    return getSquareValue_angle(delta_time);
+                    return getSquareValue_angle(delta_rad);
                 case WaveForm.Rampa:
-                    return getRampaValue_angle(delta_time);
+                    return getRampaValue_angle(delta_rad);
                 default:
-                    return getSenoidalValue_angle(delta_time);
+                    return getSenoidalValue_angle(delta_rad);
             }
         }
 
@@ -143,23 +143,24 @@ namespace GeradorDeSinais
                 counter = 0;
                 angulo = 0;
             }
-            return amplitude * Math.Sin(angulo);
 
-            return (tempo >= 0.5 / frequencia) ? amplitude : -amplitude;
+            return (angulo >= Math.PI) ? amplitude : -amplitude;
         }
-        public double getRampaValue_angle(double delta_time)
+        public double getRampaValue_angle(double delta_rad)
         {
-            double tempo = delta_time * counter;
+            double angulo;
+            angulo = counter * delta_rad;
             counter += 1;
 
-            if (tempo >= 1.0 / frequencia)
+            //Qnt de pontos por ciclo = Fsample / Fsignal
+            if (angulo >= 2 * Math.PI)
             {
                 counter = 0;
+                angulo = 0;
             }
-            //se t = 0 -> y = 0
-            //se t = T -> y = A
 
-            return tempo * frequencia / (double)amplitude;
+
+            return (angulo / (2 * Math.PI)) * (double) amplitude;
         }
         #endregion
     }
