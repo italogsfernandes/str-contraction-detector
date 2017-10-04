@@ -15,10 +15,10 @@ namespace GeradorDeSinais
             Quadrada,
             Rampa
         }
-        private WaveForm forma_da_onda;
+        public WaveForm forma_da_onda;
         public double frequencia;
         public double amplitude;
-        public int counter;
+        public UInt64 counter;
 
         public SignalGenerator(double _frequencia = 1, double _amplitude = 1, WaveForm _forma_da_onda = WaveForm.Senoidal)
         {
@@ -67,7 +67,7 @@ namespace GeradorDeSinais
             double tempo = delta_time * counter;
             counter += 1;
 
-            if(tempo >= 1.0/frequencia)
+            if(tempo >= 100.0/frequencia)
             {
                 counter = 0;
             }
@@ -97,7 +97,7 @@ namespace GeradorDeSinais
             //se t = 0 -> y = 0
             //se t = T -> y = A
 
-            return tempo*frequencia / (double) amplitude;
+            return tempo*frequencia * (double) amplitude;
         }
         #endregion
 
