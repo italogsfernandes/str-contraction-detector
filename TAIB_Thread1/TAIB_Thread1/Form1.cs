@@ -15,15 +15,19 @@ namespace TAIB_Thread1
     {
         public bool th_geradora_alive;
         public bool th_geradora_running;
-        public bool th_consumidora_alive;
-        public bool th_consumidora_running;
+        public bool th_aquisition_alive;
+        public bool th_aquisition_running;
+        public bool th_plotter_alive;
+        public bool th_plotter_running;
 
         public double valor_gerado;
         public bool data_waiting;
 
         public Thread th_geradora_handler;
-        public Thread th_consumidora_handler;
+        public Thread th_aquisition_handler;
+        public Thread th_plotter_handler;
 
+        public CircularBuffer<double> data_buffer;
 
         public delegate void UpdateValueDel(int new_value);
         public UpdateValueDel updateDel;
@@ -35,21 +39,27 @@ namespace TAIB_Thread1
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            data_buffer = new CircularBuffer<double>(1024);
+
             th_geradora_alive = false;
             th_geradora_running = false;
-            th_consumidora_alive = false;
-            th_consumidora_running = false;
+            th_aquisition_alive = false;
+            th_aquisition_running = false;
+            th_plotter_alive = false;
+            th_plotter_running = false;
 
             data_waiting = false;
 
             //Criando as threads
             th_geradora_handler = new Thread(geradora);
-            th_consumidora_handler = new Thread(consumidora);
+            th_aquisition_handler = new Thread(aquisition);
+            th_plotter_handler = new Thread(plotter);
 
             th_geradora_handler.Priority = ThreadPriority.Normal;
-            th_consumidora_handler.Priority = ThreadPriority.Normal;
+            th_aquisition_handler.Priority = ThreadPriority.Normal;
+            th_plotter_handler.Priority = ThreadPriority.Normal;
 
-            labelValueGerado.Text = "5";
+            labelValueGerado.Text = "0";
 
 
         }
@@ -75,25 +85,10 @@ namespace TAIB_Thread1
                     {
                         count = 0;
                     }
-
-                    //labelValueGerado.Text = count.ToString();
-                    //labelValueGerado.Invoke(delegate(int valor) { );
-                    //updateDel = new UpdateValueDel(atualiza_valor);
-
-                    //updateDel.Invoke(count);//Invoke(updateDel(count));
-
-                    //labelValueGerado.BeginInvoke(delegate (string s)
-                    //{
-                    //   labelValueGerado.Text = s;
-                    //}, new object[] { count.ToString() });
-
                     labelValueGerado.BeginInvoke(new Action(() =>
                     {
-                        labelValueGerado.Text = count.ToString();
+                        labelValueGerado.Text = count.ToString() + "\nData Waiting: " + data_waiting.ToString();
                     }));
-                        //(s) => { labelValueGerado.Text = "Ue";}, new object[] { count.ToString() });
-                    //labelValueGerado.Invoke((s) => { labelValueGerado.Text = s}, new object[] { count.ToString() }));
-                    //Adicinando a variavel de comunicação
                     if (!data_waiting)
                     {
                         valor_gerado = count;
@@ -104,32 +99,63 @@ namespace TAIB_Thread1
             }
         }
 
-        public void consumidora()
+        public void aquisition()
         {
-            while (th_consumidora_alive)
+            while (th_aquisition_alive)
             {
-                if (th_consumidora_running)
+                if (th_aquisition_running)
                 {
                     if (data_waiting)
                     {
-                        //processa valor
-                        //valor_gerado
-                        chartConsumidora.BeginInvoke(new Action(() =>
+                        label3.BeginInvoke(new Action(() =>
                         {
-                            chartConsumidora.Series[0].Points.AddY(valor_gerado);
-                            if(chartConsumidora.Series[0].Points.Count >= 200)
-                            {
-                                chartConsumidora.Series[0].Points.RemoveAt(0);
-                            }
+                            label3.Text = valor_gerado.ToString() + "\nBuffer: " + data_buffer.Count.ToString();
                         }));
-                        
+                        data_buffer.Enqueue(valor_gerado);
                         data_waiting = false;
                     }
+                    //Thread.Sleep(11);
                 }
             }
         }
 
+        public void plotter()
+        {
+            while (th_plotter_alive)
+            {
+                if (th_plotter_running)
+                {
+                    if (data_buffer.Count > 0)
+                    {
+                        double valor_para_plotar;
+                        valor_para_plotar = data_buffer.Dequeue();
+                        label7.BeginInvoke(new Action(() =>
+                        {
+                            label7.Text = valor_para_plotar.ToString() + "\nBuffer: " + data_buffer.Count.ToString();
+                        }));
+                        //processa valor
+                        chartConsumidora.Invoke(new Action(() =>
+                        {
+                            chartConsumidora.Series[0].Points.AddY(valor_para_plotar);
+                            if (chartConsumidora.Series[0].Points.Count >= 200)
+                            {
+                                chartConsumidora.Series[0].Points.RemoveAt(0);
+                            }
+                            if (valor_para_plotar > chartConsumidora.ChartAreas[0].AxisY.Maximum)
+                            {
+                                chartConsumidora.ChartAreas[0].AxisY.Maximum = valor_para_plotar;
+                            }
+                        }));
+                    }
+                    Thread.Sleep(5);
+                }
+            }
+
+        }
+
         #endregion
+
+        #region Eventos e Callbacks
 
         private void btnStartGeradora_Click(object sender, EventArgs e)
         {
@@ -158,25 +184,25 @@ namespace TAIB_Thread1
 
         private void btnStartConsumidora_Click(object sender, EventArgs e)
         {
-            if (!th_consumidora_alive)
+            if (!th_plotter_alive)
             {
                 btnStartConsumidora.Text = "Stop";
-                th_consumidora_alive = true;
-                th_consumidora_running = true;
-                th_consumidora_handler.Start();
+                th_plotter_alive = true;
+                th_plotter_running = true;
+                th_plotter_handler.Start();
             }
             else
             {
-                if (th_consumidora_running)
+                if (th_plotter_running)
                 {
                     btnStartConsumidora.Text = "Start";
-                    th_consumidora_running = false;
+                    th_plotter_running = false;
                     //th_geradora_handler.Abort();
                 }
                 else
                 {
                     btnStartConsumidora.Text = "Stop";
-                    th_consumidora_running = true;
+                    th_plotter_running = true;
                 }
             }
         }
@@ -184,7 +210,8 @@ namespace TAIB_Thread1
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             th_geradora_alive = false;
-            th_consumidora_alive = false;
+            th_aquisition_alive = false;
+            th_plotter_alive = false;
 
 
             // Another way but not so optimized
@@ -199,5 +226,32 @@ namespace TAIB_Thread1
             }*/
             
         }
+ 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (!th_aquisition_alive)
+            {
+                button1.Text = "Stop";
+                th_aquisition_alive = true;
+                th_aquisition_running = true;
+                th_aquisition_handler.Start();
+            }
+            else
+            {
+                if (th_aquisition_running)
+                {
+                    button1.Text = "Start";
+                    th_aquisition_running = false;
+                    //th_geradora_handler.Abort();
+                }
+                else
+                {
+                    button1.Text = "Stop";
+                    th_aquisition_running = true;
+                }
+            }
+        }
+        #endregion
+
     }
 }
