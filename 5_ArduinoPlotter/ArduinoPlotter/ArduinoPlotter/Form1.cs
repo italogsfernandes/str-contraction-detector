@@ -39,6 +39,7 @@ namespace ArduinoPlotter
                 arduinoPort.Open();
                 arduinoPort.DiscardInBuffer();
                 arduinoPort.DiscardOutBuffer();
+                LabelStatusConexao.Text = "Conectado à Porta " + arduinoPort.PortName.ToString();
             }
             catch (Exception) {
                 LabelStatusConexao.Text = "Desconectado à Porta " + arduinoPort.PortName.ToString();
@@ -88,8 +89,6 @@ namespace ArduinoPlotter
                 catch (Exception)
                 {
                     LabelStatusConexao.Text = "Desconectado à Porta " + arduinoPort.PortName.ToString();
-                    MessageBox.Show("Erro com a porta serial.", "Aviso",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 
             }
@@ -119,6 +118,10 @@ namespace ArduinoPlotter
                         if(chart1.Series[0].Points.Count > 600)
                         {
                             chart1.Series[0].Points.RemoveAt(0);
+                        }
+                        if (value2plot > chart1.ChartAreas[0].AxisY.Maximum)
+                        {
+                            chart1.ChartAreas[0].AxisY.Maximum = value2plot;
                         }
                     }));
                 }
@@ -165,6 +168,7 @@ namespace ArduinoPlotter
         {
             aquirer_is_alive = false;
             plotter_is_alive = false;
+            plotter.Abort();
         }
 
         private void ajudaToolStripMenuItem_Click(object sender, EventArgs e)
