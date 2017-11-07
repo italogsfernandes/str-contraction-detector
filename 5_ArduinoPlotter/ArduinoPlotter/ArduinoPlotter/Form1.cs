@@ -38,7 +38,8 @@ namespace ArduinoPlotter
             toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
             chart1.Titles[0].Text = "Sensor Cardiaco";
-            
+            chart1.Series[0].BorderWidth = 3;
+
             arduinoPort = new SerialPort();
             arduinoPort.PortName = GetArduinoSerialPort();
             arduinoPort.BaudRate = 115200;
