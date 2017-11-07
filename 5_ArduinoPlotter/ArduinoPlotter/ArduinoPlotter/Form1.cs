@@ -37,7 +37,8 @@ namespace ArduinoPlotter
             auto_ajuste_enabled = true;
             toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-
+            chart1.Titles[0].Text = "Sensor Cardiaco";
+            
             arduinoPort = new SerialPort();
             arduinoPort.PortName = GetArduinoSerialPort();
             arduinoPort.BaudRate = 115200;
@@ -60,6 +61,8 @@ namespace ArduinoPlotter
             plotter = new Thread(doPlot);
             plotter_is_alive = true;
             aquirer_is_alive = true;
+            aquirer.Priority = ThreadPriority.AboveNormal;
+            plotter.Priority = ThreadPriority.AboveNormal;
             aquirer.Start();
             plotter.Start();
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
@@ -297,6 +300,19 @@ namespace ArduinoPlotter
             txAxisXMax.Text = chart1.ChartAreas[0].AxisX.Maximum.ToString();
             txAxisYMin.Text = chart1.ChartAreas[0].AxisY.Minimum.ToString();
             txAxisYMax.Text = chart1.ChartAreas[0].AxisY.Maximum.ToString();
+        }
+
+        private void limparBufferToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            data_read.Clear();
+        }
+
+        private void autoSetEixoYToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            toolStripComboBox1.SelectedIndex = 1;
+            auto_ajuste_enabled = false;
+            chart1.ChartAreas[0].AxisY.Minimum = 2;
+            chart1.ChartAreas[0].AxisY.Maximum = 3;
         }
     }
     
