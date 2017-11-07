@@ -33,12 +33,12 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            max_x_points = 600;
+            max_x_points = 400;
             auto_ajuste_enabled = true;
             toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
             chart1.Titles[0].Text = "Sensor Cardiaco";
-            chart1.Series[0].BorderWidth = 3;
+            //chart1.Series[0].BorderWidth = 1;
 
             arduinoPort = new SerialPort();
             arduinoPort.PortName = GetArduinoSerialPort();
@@ -62,8 +62,8 @@ namespace ArduinoPlotter
             plotter = new Thread(doPlot);
             plotter_is_alive = true;
             aquirer_is_alive = true;
-            aquirer.Priority = ThreadPriority.AboveNormal;
-            plotter.Priority = ThreadPriority.AboveNormal;
+            aquirer.Priority = ThreadPriority.Highest;
+            plotter.Priority = ThreadPriority.Highest;
             aquirer.Start();
             plotter.Start();
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
@@ -305,7 +305,9 @@ namespace ArduinoPlotter
 
         private void limparBufferToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            access_control.WaitOne();
             data_read.Clear();
+            access_control.ReleaseMutex();
         }
 
         private void autoSetEixoYToolStripMenuItem_Click(object sender, EventArgs e)

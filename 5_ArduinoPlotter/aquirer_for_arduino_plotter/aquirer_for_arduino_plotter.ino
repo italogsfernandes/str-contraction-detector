@@ -16,6 +16,8 @@
 #define UART_START '$'
 #define UART_END '\n'
 
+#define AQUIRE_FREQ 50
+
 ///////////
 //Clases //
 ///////////
@@ -87,7 +89,7 @@ Timer aquisition;
 uint16_t valor_adc;
 void setup() {
   Serial.begin(UART_BAUDRATE);
-  aquisition.setFreq(100); //100Hz
+  aquisition.setFreq(AQUIRE_FREQ); //100Hz
   aquisition.start();
 }
 void loop() {
