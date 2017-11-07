@@ -22,6 +22,9 @@ namespace ArduinoPlotter
         bool plotter_is_alive;
         Mutex access_control;
         Queue<double> data_read;
+        int max_x_points;
+
+        bool auto_ajuste_enabled;
 
         public Form1()
         {
@@ -30,7 +33,11 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            max_x_points = 600;
+            auto_ajuste_enabled = true;
+            toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+
             arduinoPort = new SerialPort();
             arduinoPort.PortName = GetArduinoSerialPort();
             arduinoPort.BaudRate = 115200;
@@ -55,6 +62,8 @@ namespace ArduinoPlotter
             aquirer_is_alive = true;
             aquirer.Start();
             plotter.Start();
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
+            chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0.0}";
         }
 
  
@@ -115,13 +124,14 @@ namespace ArduinoPlotter
                     chart1.Invoke(new Action(() =>
                     {
                         chart1.Series[0].Points.AddY(value2plot);
-                        if(chart1.Series[0].Points.Count > 600)
+                        if(chart1.Series[0].Points.Count > max_x_points)
                         {
                             chart1.Series[0].Points.RemoveAt(0);
                         }
-                        if (value2plot > chart1.ChartAreas[0].AxisY.Maximum)
+                        if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
                         {
                             chart1.ChartAreas[0].AxisY.Maximum = value2plot;
+                            txAxisYMax.Text = value2plot.ToString("#.##");
                         }
                     }));
                 }
@@ -201,6 +211,92 @@ namespace ArduinoPlotter
             {
                 Console.WriteLine(exc.Message);
             }
+        }
+
+
+        private void toolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            auto_ajuste_enabled = toolStripComboBox1.SelectedIndex == 0;
+        }
+
+        private void txAxisXMin_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                double novo_valor;
+                if (Double.TryParse(txAxisXMin.Text, out novo_valor))
+                {
+                    chart1.ChartAreas[0].AxisX.Minimum = novo_valor;
+                }
+                else
+                {
+                    MessageBox.Show("Erro ao inserir o valor.", "Aviso",
+                         MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void txAxisXMax_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                double novo_valor;
+                if (Double.TryParse(txAxisXMax.Text, out novo_valor))
+                {
+                    chart1.ChartAreas[0].AxisX.Maximum = novo_valor + 1;
+                    max_x_points = (int) novo_valor;
+                }
+                else
+                {
+                    MessageBox.Show("Erro ao inserir o valor.", "Aviso",
+                         MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void txAxisYMin_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                double novo_valor;
+                if (Double.TryParse(txAxisYMin.Text, out novo_valor))
+                {
+                    chart1.ChartAreas[0].AxisY.Minimum = novo_valor;
+                }
+                else
+                {
+                    MessageBox.Show("Erro ao inserir o valor.", "Aviso",
+                         MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void txAxisYMax_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                double novo_valor;
+                if (Double.TryParse(txAxisYMax.Text, out novo_valor))
+                {
+                    if (!auto_ajuste_enabled)
+                    {
+                        chart1.ChartAreas[0].AxisY.Maximum = novo_valor;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Erro ao inserir o valor.", "Aviso",
+                         MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void configuraçõesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            txAxisXMin.Text = chart1.ChartAreas[0].AxisX.Minimum.ToString();
+            txAxisXMax.Text = chart1.ChartAreas[0].AxisX.Maximum.ToString();
+            txAxisYMin.Text = chart1.ChartAreas[0].AxisY.Minimum.ToString();
+            txAxisYMax.Text = chart1.ChartAreas[0].AxisY.Maximum.ToString();
         }
     }
     
