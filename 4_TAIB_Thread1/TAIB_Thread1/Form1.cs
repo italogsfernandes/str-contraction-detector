@@ -57,7 +57,7 @@ namespace TAIB_Thread1
 
             th_geradora_handler.Priority = ThreadPriority.Normal;
             th_aquisition_handler.Priority = ThreadPriority.Normal;
-            th_plotter_handler.Priority = ThreadPriority.Normal;
+            th_plotter_handler.Priority = ThreadPriority.Lowest;
 
             labelValueGerado.Text = "0";
 
@@ -94,7 +94,7 @@ namespace TAIB_Thread1
                         valor_gerado = count;
                         data_waiting = true;
                     }
-                    Thread.Sleep(10); //Define taxa de amostragem em 100 Hz
+                    Thread.Sleep(2); //Define taxa de amostragem em 100 Hz
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace TAIB_Thread1
             {
                 if (th_plotter_running)
                 {
-                    if (data_buffer.Count > 0)
+                    if (data_buffer.Count > 100)
                     {
                         double valor_para_plotar;
                         valor_para_plotar = data_buffer.Dequeue();
@@ -136,8 +136,14 @@ namespace TAIB_Thread1
                         //processa valor
                         chartConsumidora.Invoke(new Action(() =>
                         {
+
                             chartConsumidora.Series[0].Points.AddY(valor_para_plotar);
-                            if (chartConsumidora.Series[0].Points.Count >= 200)
+                            while(data_buffer.Count > 0)
+                            {
+                                chartConsumidora.Series[0].Points.AddY(data_buffer.Dequeue());
+                            }
+
+                            while (chartConsumidora.Series[0].Points.Count >= 200)
                             {
                                 chartConsumidora.Series[0].Points.RemoveAt(0);
                             }
@@ -147,7 +153,7 @@ namespace TAIB_Thread1
                             }
                         }));
                     }
-                    Thread.Sleep(5);
+                    //Thread.Sleep(5);
                 }
             }
 
