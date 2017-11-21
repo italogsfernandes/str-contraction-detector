@@ -2,7 +2,7 @@
    Biomedical Engineering
    Autors: Ítalo G S Fernandes
    contact: italogsfernandes@gmail.com
-   URLs: https://github.com/italogfernandes/SEB
+   URLs: https://github.com/italogfernandes/str
   Description
 */
 
@@ -16,8 +16,7 @@
 #define UART_START '$'
 #define UART_END '\n'
 
-#define AQUIRE_FREQ 50
-
+#define AQUIRE_FREQ 75
 ///////////
 //Clases //
 ///////////
@@ -95,13 +94,30 @@ void setup() {
 void loop() {
   aquisition.update();
   if (aquisition.elapsed) {
-    doAquire();
+    //doAquire();
+    emulateRampa();
     aquisition.wait_next();
   }
 }
 
 void doAquire() {
   valor_adc = analogRead(PINO_ADC);
+#ifdef DEBUG_MODE
+  Serial.println(valor_adc);
+#endif
+#ifndef DEBUG_MODE
+  Serial.write(UART_START);
+  Serial.write((uint8_t) (valor_adc >> 8));
+  Serial.write((uint8_t) (valor_adc & 0xFF));
+  Serial.write(UART_END);
+#endif
+}
+
+void emulateRampa() {
+  valor_adc += 10;
+  if(valor_adc > 1000){
+    valor_adc = 0;
+  }
 #ifdef DEBUG_MODE
   Serial.println(valor_adc);
 #endif

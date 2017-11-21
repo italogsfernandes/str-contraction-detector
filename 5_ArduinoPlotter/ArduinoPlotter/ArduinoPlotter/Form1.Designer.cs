@@ -28,9 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.labelStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.LabelStatusConexao = new System.Windows.Forms.ToolStripStatusLabel();
@@ -46,10 +47,13 @@
             this.txAxisYMin = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
             this.txAxisYMax = new System.Windows.Forms.ToolStripTextBox();
+            this.autoSetEixoYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.limparBufferToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ajudaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sobreToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.limparBufferToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.autoSetEixoYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pausePlotterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
@@ -60,7 +64,8 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.labelStatus,
-            this.LabelStatusConexao});
+            this.LabelStatusConexao,
+            this.toolStripProgressBar1});
             this.statusStrip1.Location = new System.Drawing.Point(0, 275);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(540, 22);
@@ -90,31 +95,32 @@
             // 
             // chart1
             // 
-            chartArea3.AxisX.Title = "Pontos";
-            chartArea3.AxisY.Title = "Volts";
-            chartArea3.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea3);
+            chartArea5.AxisX.Title = "Pontos";
+            chartArea5.AxisY.Title = "Volts";
+            chartArea5.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea5);
             this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Name = "chart1";
-            series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-            series3.Name = "Series1";
-            this.chart1.Series.Add(series3);
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+            series5.Name = "Series1";
+            this.chart1.Series.Add(series5);
             this.chart1.Size = new System.Drawing.Size(540, 251);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
-            title3.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            title3.Name = "Title1";
-            title3.Text = "STR - Arduino Plotter";
-            this.chart1.Titles.Add(title3);
+            title5.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            title5.Name = "Title1";
+            title5.Text = "STR - Arduino Plotter";
+            this.chart1.Titles.Add(title5);
             // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.configuraçõesToolStripMenuItem,
             this.ajudaToolStripMenuItem,
-            this.sobreToolStripMenuItem});
+            this.sobreToolStripMenuItem,
+            this.pausePlotterToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(540, 24);
@@ -138,7 +144,7 @@
             this.eixoYToolStripMenuItem,
             this.autoSetEixoYToolStripMenuItem});
             this.ajustarEscalaToolStripMenuItem.Name = "ajustarEscalaToolStripMenuItem";
-            this.ajustarEscalaToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ajustarEscalaToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.ajustarEscalaToolStripMenuItem.Text = "Ajustar Escala:";
             // 
             // eixoXToolStripMenuItem
@@ -147,7 +153,7 @@
             this.txAxisXMin,
             this.txAxisXMax});
             this.eixoXToolStripMenuItem.Name = "eixoXToolStripMenuItem";
-            this.eixoXToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.eixoXToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.eixoXToolStripMenuItem.Text = "Eixo X:";
             // 
             // txAxisXMin
@@ -169,7 +175,7 @@
             this.toolStripComboBox1,
             this.txAxisYMax});
             this.eixoYToolStripMenuItem.Name = "eixoYToolStripMenuItem";
-            this.eixoYToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.eixoYToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.eixoYToolStripMenuItem.Text = "Eixo Y:";
             // 
             // txAxisYMin
@@ -193,6 +199,20 @@
             this.txAxisYMax.Size = new System.Drawing.Size(100, 23);
             this.txAxisYMax.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txAxisYMax_KeyDown);
             // 
+            // autoSetEixoYToolStripMenuItem
+            // 
+            this.autoSetEixoYToolStripMenuItem.Name = "autoSetEixoYToolStripMenuItem";
+            this.autoSetEixoYToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.autoSetEixoYToolStripMenuItem.Text = "Auto-Set Eixo Y";
+            this.autoSetEixoYToolStripMenuItem.Click += new System.EventHandler(this.autoSetEixoYToolStripMenuItem_Click);
+            // 
+            // limparBufferToolStripMenuItem
+            // 
+            this.limparBufferToolStripMenuItem.Name = "limparBufferToolStripMenuItem";
+            this.limparBufferToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.limparBufferToolStripMenuItem.Text = "Limpar Buffer";
+            this.limparBufferToolStripMenuItem.Click += new System.EventHandler(this.limparBufferToolStripMenuItem_Click);
+            // 
             // ajudaToolStripMenuItem
             // 
             this.ajudaToolStripMenuItem.Name = "ajudaToolStripMenuItem";
@@ -207,19 +227,24 @@
             this.sobreToolStripMenuItem.Text = "Sobre";
             this.sobreToolStripMenuItem.Click += new System.EventHandler(this.sobreToolStripMenuItem_Click);
             // 
-            // limparBufferToolStripMenuItem
+            // pausePlotterToolStripMenuItem
             // 
-            this.limparBufferToolStripMenuItem.Name = "limparBufferToolStripMenuItem";
-            this.limparBufferToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.limparBufferToolStripMenuItem.Text = "Limpar Buffer";
-            this.limparBufferToolStripMenuItem.Click += new System.EventHandler(this.limparBufferToolStripMenuItem_Click);
+            this.pausePlotterToolStripMenuItem.Name = "pausePlotterToolStripMenuItem";
+            this.pausePlotterToolStripMenuItem.Size = new System.Drawing.Size(88, 20);
+            this.pausePlotterToolStripMenuItem.Text = "Pause Plotter";
+            this.pausePlotterToolStripMenuItem.Click += new System.EventHandler(this.pausePlotterToolStripMenuItem_Click);
             // 
-            // autoSetEixoYToolStripMenuItem
+            // timer1
             // 
-            this.autoSetEixoYToolStripMenuItem.Name = "autoSetEixoYToolStripMenuItem";
-            this.autoSetEixoYToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.autoSetEixoYToolStripMenuItem.Text = "Auto-Set Eixo Y";
-            this.autoSetEixoYToolStripMenuItem.Click += new System.EventHandler(this.autoSetEixoYToolStripMenuItem_Click);
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 1;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 16);
+            this.toolStripProgressBar1.Click += new System.EventHandler(this.toolStripProgressBar1_Click);
             // 
             // Form1
             // 
@@ -265,6 +290,9 @@
         private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
         private System.Windows.Forms.ToolStripMenuItem limparBufferToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem autoSetEixoYToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pausePlotterToolStripMenuItem;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     }
 }
 

@@ -21,8 +21,9 @@ namespace ArduinoPlotter
         bool aquirer_is_alive;
         bool plotter_is_alive;
         Mutex access_control;
-        Queue<double> data_read;
+        CircularBuffer<UInt16> data_read;
         int max_x_points;
+        bool plotter_is_running;
 
         bool auto_ajuste_enabled;
 
@@ -33,12 +34,13 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            max_x_points = 400;
+            max_x_points = 150;
             auto_ajuste_enabled = true;
+            plotter_is_running = true;
             toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-            chart1.Titles[0].Text = "Sensor Cardiaco";
-            //chart1.Series[0].BorderWidth = 1;
+            //chart1.Titles[0].Text = "Sensor Cardiaco";
+            chart1.Series[0].BorderWidth = 50;
 
             arduinoPort = new SerialPort();
             arduinoPort.PortName = GetArduinoSerialPort();
@@ -57,13 +59,14 @@ namespace ArduinoPlotter
             }
            
             access_control = new Mutex();
-            data_read = new Queue<double>(1024);
+            data_read = new CircularBuffer<UInt16>(1024);
+            toolStripProgressBar1.Maximum = 1023;
             aquirer = new Thread(doAquire);
             plotter = new Thread(doPlot);
             plotter_is_alive = true;
             aquirer_is_alive = true;
-            aquirer.Priority = ThreadPriority.Highest;
-            plotter.Priority = ThreadPriority.Highest;
+            aquirer.Priority = ThreadPriority.Normal;
+            plotter.Priority = ThreadPriority.Normal;
             aquirer.Start();
             plotter.Start();
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
@@ -91,9 +94,24 @@ namespace ArduinoPlotter
                                 valor_lido = (char)arduinoPort.ReadChar();
                                 if (valor_lido == '\n')
                                 {
+
+                                    bool retorno_circular_buffer;
                                     access_control.WaitOne();
-                                    data_read.Enqueue(data2plot * 5.0 / 1023.0);
+                                    retorno_circular_buffer = data_read.Enqueue(Convert.ToUInt16(data2plot));
                                     access_control.ReleaseMutex();
+                                    if (!retorno_circular_buffer)
+                                    {
+                                        statusStrip1.Invoke(new Action(() =>
+                                        {
+                                            LabelStatusConexao.Text = "Buffer Cheio - " + arduinoPort.PortName.ToString();
+                                        }));
+                                        
+                                        MessageBox.Show("O buffer de dados encheu.", "Erro na Aquisição",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        aquirer_is_alive = false;
+                                        plotter_is_alive = false;
+                                    }
+                                    
                                 }
                             }
                         }
@@ -101,7 +119,9 @@ namespace ArduinoPlotter
                 }
                 catch (Exception)
                 {
-                    LabelStatusConexao.Text = "Desconectado à Porta " + arduinoPort.PortName.ToString();
+                    //LabelStatusConexao.Text = "Desconectado à Porta " + arduinoPort.PortName.ToString();
+                    MessageBox.Show("Arduino Desconectado", "Erro na Aquisição",
+                                           MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 
             }
@@ -109,35 +129,53 @@ namespace ArduinoPlotter
         }
         public void doPlot()
         {
-            double value2plot;
+            UInt16 value2plot;
             int qnt_in_buffer;
+            double freq_aquire = 75.0;
+            double time_increment = 1.0 / freq_aquire;
+            double time_stamp = 0;
+            int qnt_anterior_in_buffer = 0;
             while (plotter_is_alive)
             {
                 access_control.WaitOne();
                 qnt_in_buffer = data_read.Count;
-                statusStrip1.Invoke(new Action(() =>
-                {
-                    labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
-                }));
                 access_control.ReleaseMutex();
-                if (qnt_in_buffer > 0)
-                {
-                    access_control.WaitOne();
-                    value2plot = data_read.Dequeue();
-                    access_control.ReleaseMutex();
-                    chart1.Invoke(new Action(() =>
+
+                if(qnt_in_buffer != qnt_anterior_in_buffer) {
+                    statusStrip1.Invoke(new Action(() =>
                     {
-                        chart1.Series[0].Points.AddY(value2plot);
-                        if(chart1.Series[0].Points.Count > max_x_points)
-                        {
-                            chart1.Series[0].Points.RemoveAt(0);
-                        }
-                        if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
-                        {
-                            chart1.ChartAreas[0].AxisY.Maximum = value2plot;
-                            txAxisYMax.Text = value2plot.ToString("#.##");
-                        }
+                        labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
+                        toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
                     }));
+                }
+
+                qnt_anterior_in_buffer = qnt_in_buffer;
+                if (plotter_is_running)
+                {
+                    if (qnt_in_buffer > 0)
+                    {
+                        access_control.WaitOne();
+                        value2plot = data_read.Dequeue();
+                        access_control.ReleaseMutex();
+
+                        time_stamp += time_increment;
+                        chart1.Invoke(new Action(() =>
+                        {
+                            chart1.Series[0].Points.AddXY(time_stamp, value2plot);
+
+                            if (chart1.Series[0].Points.Count > max_x_points)
+                            {
+                                chart1.Series[0].Points.RemoveAt(0);
+                                chart1.ChartAreas[0].AxisX.Minimum += time_increment;
+                                chart1.ChartAreas[0].AxisX.Maximum += time_increment;
+                            }
+                            //if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
+                            //{
+                            //    chart1.ChartAreas[0].AxisY.Maximum = value2plot;
+                            //    txAxisYMax.Text = value2plot.ToString("#.##");
+                            //}
+                        }));
+                    }
                 }
             }
         }
@@ -172,9 +210,9 @@ namespace ArduinoPlotter
             catch (ManagementException e)
             {
                 Console.WriteLine(e.ToString());
-                return "";
+                return "COM3";
             }
-            return "COM5"; // Work around.... 
+            return "COM6"; // Work around.... 
         }
 
 
@@ -316,6 +354,19 @@ namespace ArduinoPlotter
             auto_ajuste_enabled = false;
             chart1.ChartAreas[0].AxisY.Minimum = 2;
             chart1.ChartAreas[0].AxisY.Maximum = 3;
+        }
+
+        private void pausePlotterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            plotter_is_running = !plotter_is_running;
+        }
+
+        private void timer1_Tick(object sender, EventArgs e) { 
+        }
+
+        private void toolStripProgressBar1_Click(object sender, EventArgs e)
+        {
+
         }
     }
     
