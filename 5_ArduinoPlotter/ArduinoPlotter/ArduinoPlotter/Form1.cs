@@ -15,6 +15,7 @@ namespace ArduinoPlotter
 {
     public partial class Form1 : Form
     {
+        #region Atributos e Propriedades
         SerialPort arduinoPort;
         Thread aquirer;
         Thread plotter;
@@ -24,9 +25,11 @@ namespace ArduinoPlotter
         CircularBuffer<UInt16> data_read;
         int max_x_points;
         bool plotter_is_running;
-
+        string arduino_description;
         bool auto_ajuste_enabled;
+        #endregion
 
+        #region Inicializadores, Construtores e Terminadores
         public Form1()
         {
             InitializeComponent();
@@ -34,13 +37,14 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            max_x_points = 150;
+            arduino_description = "None";
+            max_x_points = 1500;
             auto_ajuste_enabled = true;
             plotter_is_running = true;
             toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
             //chart1.Titles[0].Text = "Sensor Cardiaco";
-            chart1.Series[0].BorderWidth = 50;
+            chart1.Series[0].BorderWidth = 1;
 
             arduinoPort = new SerialPort();
             arduinoPort.PortName = GetArduinoSerialPort();
@@ -50,16 +54,16 @@ namespace ArduinoPlotter
                 arduinoPort.Open();
                 arduinoPort.DiscardInBuffer();
                 arduinoPort.DiscardOutBuffer();
-                LabelStatusConexao.Text = "Conectado à Porta " + arduinoPort.PortName.ToString();
+                LabelStatusConexao.Text = "Conectado à " + arduino_description;
             }
             catch (Exception) {
-                LabelStatusConexao.Text = "Desconectado à Porta " + arduinoPort.PortName.ToString();
+                LabelStatusConexao.Text = "Desconectado à " + arduino_description;
                 MessageBox.Show("Erro ao procurar a porta serial.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
            
             access_control = new Mutex();
-            data_read = new CircularBuffer<UInt16>(1024);
+            data_read = new CircularBuffer<UInt16>(10240);
             toolStripProgressBar1.Maximum = 1023;
             aquirer = new Thread(doAquire);
             plotter = new Thread(doPlot);
@@ -73,7 +77,57 @@ namespace ArduinoPlotter
             chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0.0}";
         }
 
- 
+        public string GetArduinoSerialPort()
+        {
+            try
+            {
+                var query = new ManagementObjectSearcher("root\\CIMV2",
+                                                         "SELECT * FROM Win32_PnPEntity");
+
+                query.Options.Timeout = new TimeSpan(0, 0, 1); //timeout => TimeSpan(horas, minutos, segundos);
+                query.Options.ReturnImmediately = false;
+
+                foreach (ManagementObject obj in query.Get())
+                {
+                    using (obj)
+                    {
+                        string ss;
+                        if (obj["Caption"] == null)
+                        {
+                            ss = "";
+                        }
+                        else
+                        {
+                            ss = obj["Caption"].ToString();
+                        }
+                        if (ss.Contains("Arduino"))
+                        {
+                            string portDescription = obj["Caption"].ToString();
+                            arduino_description = portDescription;
+                            string resultado = portDescription.Substring(portDescription.Length - 6,5);
+                            return resultado;
+                        }
+                    }
+                }
+            }
+            catch (ManagementException e)
+            {
+                Console.WriteLine(e.ToString());
+                return "COM3";
+            }
+            return "COM25"; // Work around.... 
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            aquirer_is_alive = false;
+            plotter_is_alive = false;
+            plotter.Abort();
+        }
+
+        #endregion
+
+        #region Threads
         public void doAquire()
         {
             int data2plot;
@@ -84,7 +138,7 @@ namespace ArduinoPlotter
                 {
                     if (arduinoPort.IsOpen)
                     {
-                        if (arduinoPort.BytesToRead > 4)
+                        while (arduinoPort.BytesToRead > 4)
                         {
                             valor_lido = (char)arduinoPort.ReadChar();
                             if (valor_lido == '$')
@@ -131,28 +185,29 @@ namespace ArduinoPlotter
         {
             UInt16 value2plot;
             int qnt_in_buffer;
-            double freq_aquire = 75.0;
+            double freq_aquire = 500;
             double time_increment = 1.0 / freq_aquire;
             double time_stamp = 0;
             int qnt_anterior_in_buffer = 0;
             while (plotter_is_alive)
             {
-                access_control.WaitOne();
                 qnt_in_buffer = data_read.Count;
-                access_control.ReleaseMutex();
-
-                if(qnt_in_buffer != qnt_anterior_in_buffer) {
-                    statusStrip1.Invoke(new Action(() =>
+                #region Atualiza Label
+                if (qnt_in_buffer != qnt_anterior_in_buffer)
+                {
+                    statusStrip1.BeginInvoke(new Action(() =>
                     {
                         labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
                         toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
                     }));
                 }
-
                 qnt_anterior_in_buffer = qnt_in_buffer;
+                #endregion
+
+
                 if (plotter_is_running)
                 {
-                    if (qnt_in_buffer > 0)
+                    while (qnt_in_buffer > 0)
                     {
                         access_control.WaitOne();
                         value2plot = data_read.Dequeue();
@@ -175,54 +230,26 @@ namespace ArduinoPlotter
                             //    txAxisYMax.Text = value2plot.ToString("#.##");
                             //}
                         }));
+
+                        qnt_in_buffer = data_read.Count;
+                        #region Atualiza Label
+                        if (qnt_in_buffer != qnt_anterior_in_buffer)
+                        {
+                            statusStrip1.BeginInvoke(new Action(() =>
+                            {
+                                labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
+                                toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
+                            }));
+                        }
+                        qnt_anterior_in_buffer = qnt_in_buffer;
+                        #endregion
                     }
                 }
             }
         }
+        #endregion
 
-        public string GetArduinoSerialPort()
-        {
-            try
-            {
-                var query = new ManagementObjectSearcher("root\\CIMV2",
-                                                         "SELECT * FROM Win32_PnPEntity");
-
-                query.Options.Timeout = new TimeSpan(0, 0, 1); //timeout => TimeSpan(horas, minutos, segundos);
-                query.Options.ReturnImmediately = false;
-
-                foreach (ManagementObject obj in query.Get())
-                {
-                    using (obj)
-                    {
-                        string ss;
-                        if (obj["Caption"] == null){
-                            ss = "";
-                        }
-                        else{
-                            ss = obj["Caption"].ToString();
-                        }
-                        if (ss.Contains("Arduino")) {
-                            string portDescription = obj["Caption"].ToString();
-                        }
-                    }
-                }
-            }
-            catch (ManagementException e)
-            {
-                Console.WriteLine(e.ToString());
-                return "COM3";
-            }
-            return "COM6"; // Work around.... 
-        }
-
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            aquirer_is_alive = false;
-            plotter_is_alive = false;
-            plotter.Abort();
-        }
-
+        #region Interface Callbacks
         private void ajudaToolStripMenuItem_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process myProcess = new System.Diagnostics.Process();
@@ -368,7 +395,8 @@ namespace ArduinoPlotter
         {
 
         }
+        #endregion
     }
-    
+
 
 }
