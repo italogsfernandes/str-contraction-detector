@@ -17,16 +17,32 @@ namespace ArduinoPlotter
     {
         #region Atributos e Propriedades
         SerialPort arduinoPort;
+
         Thread aquirer;
         Thread plotter;
+        Thread processer;
+
         bool aquirer_is_alive;
         bool plotter_is_alive;
-        Mutex access_control;
-        CircularBuffer<UInt16> data_read;
-        int max_x_points;
+        bool processer_is_alive;
+
         bool plotter_is_running;
+        bool processer_is_running;
+
+        Mutex access_control;
+        Mutex fft_access_control;
+
+        CircularBuffer<UInt16> data_read;
+        CircularBuffer<UInt16[]> fft_buffer;
+
+        int max_x_points;
+        double freq_aquire;
         string arduino_description;
         bool auto_ajuste_enabled;
+
+        FFT2 fft = new FFT2();
+        uint fftN; //2^12 = 4096
+        int fftwindow;
         #endregion
 
         #region Inicializadores, Construtores e Terminadores
@@ -37,9 +53,18 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            max_x_points = 1000;
+            max_x_points = 500;
+            fftN = 8; //2^8 = 256
+            fftwindow = (int)Math.Pow(2, fftN);
+            
+
+            freq_aquire = 100;
             //chart1.ChartAreas[0].AxisX.Maximum = 10;
             auto_ajuste_enabled = true;
+
+            fft_buffer = new CircularBuffer<UInt16[]>();
+            data_read = new CircularBuffer<UInt16>(12000);
+            toolStripProgressBar1.Maximum = 12000;
 
             #region Chart
             toolStripComboBox1.SelectedIndex = 0;
@@ -50,6 +75,7 @@ namespace ArduinoPlotter
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
             chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0.0}";
             #endregion
+
 
             #region Porta Serial do Arduino
             arduino_description = "None";
@@ -73,17 +99,21 @@ namespace ArduinoPlotter
 
             #region Threads
             plotter_is_running = true;
+            processer_is_running = true;
             access_control = new Mutex();
-            data_read = new CircularBuffer<UInt16>(12000);
-            toolStripProgressBar1.Maximum = 12000;
+            fft_access_control = new Mutex();
             aquirer = new Thread(doAquire);
             plotter = new Thread(doPlot);
+            processer = new Thread(doFFT);
             plotter_is_alive = true;
             aquirer_is_alive = true;
+            processer_is_alive = true;
+            processer.Priority = ThreadPriority.Normal;
             aquirer.Priority = ThreadPriority.Highest;
             plotter.Priority = ThreadPriority.Normal;
             aquirer.Start();
             plotter.Start();
+            processer.Start();
             #endregion
 
            
@@ -146,6 +176,10 @@ namespace ArduinoPlotter
             int data2plot;
             char valor_lido;
             bool retorno_circular_buffer;
+            UInt16[] pacote_fft;
+            pacote_fft = new UInt16[fftwindow];
+            int pacote_fft_index = 0;
+
             while (aquirer_is_alive)
             {
                 try
@@ -166,9 +200,19 @@ namespace ArduinoPlotter
 
                                 if (valor_lido == '\n') {
 
+                                    //Adicionar no buffer de plotagem
                                     access_control.WaitOne();
                                     retorno_circular_buffer = data_read.Enqueue(Convert.ToUInt16(data2plot));
                                     access_control.ReleaseMutex();
+                                    //Adicionar no buffer da fft
+                                    pacote_fft[pacote_fft_index] = Convert.ToUInt16(data2plot);
+                                    pacote_fft_index = pacote_fft_index + 1;
+                                    if (pacote_fft_index >= fftwindow) {
+                                        fft_access_control.WaitOne();
+                                        fft_buffer.Enqueue(pacote_fft);
+                                        fft_access_control.ReleaseMutex();
+                                        pacote_fft_index = 0;
+                                    }
 
                                     if (!retorno_circular_buffer){ //Se nao foi possivel adicionar ao buffer:
                                         #region Mostra Mensagem de Erro
@@ -209,13 +253,11 @@ namespace ArduinoPlotter
             UInt16 value2plot;
             int qnt_in_buffer;
             int qnt_anterior_in_buffer = 0;
-            double freq_aquire = 1000;
             double time_increment = 1.0 / freq_aquire;
             double time_stamp = 0;
 
             while (plotter_is_alive)
             {
-                Thread.Sleep(50);
                 qnt_in_buffer = data_read.Count;
                 #region Atualiza Label
                 if (qnt_in_buffer != qnt_anterior_in_buffer)
@@ -231,23 +273,21 @@ namespace ArduinoPlotter
 
                 if (plotter_is_running)
                 {
-                    access_control.WaitOne();
-                    while (qnt_in_buffer > 0)
+                    if(qnt_in_buffer > 0)
                     {
-                       
+                        access_control.WaitOne();
                         value2plot = data_read.Dequeue();
-                        
-
+                        access_control.ReleaseMutex();
                         time_stamp += time_increment;
                         chart1.Invoke(new Action(() =>
                         {
-                        chart1.Series[0].Points.AddY(value2plot);// time_stamp, value2plot);
+                        chart1.Series[0].Points.AddXY( time_stamp, value2plot);
 
                             if (chart1.Series[0].Points.Count > max_x_points)
                             {
                                 chart1.Series[0].Points.RemoveAt(0);
-                                //chart1.ChartAreas[0].AxisX.Minimum += time_increment;
-                                //chart1.ChartAreas[0].AxisX.Maximum += time_increment;
+                                chart1.ChartAreas[0].AxisX.Minimum += time_increment;
+                                chart1.ChartAreas[0].AxisX.Maximum += time_increment;
                             }
                             if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
                             {
@@ -269,8 +309,66 @@ namespace ArduinoPlotter
                         qnt_anterior_in_buffer = qnt_in_buffer;
                         #endregion
                     }
-                    access_control.ReleaseMutex();
 
+                }
+            }
+        }
+        public void doFFT()
+        {
+            int qnt_in_buffer;
+            UInt16[] values_fft;
+
+            double[] realFFT = new double[fftwindow];
+            double[] imFFT = new double[fftwindow];
+            double[] pow = new double[fftwindow / 2];
+            double[] freqs = new double[fftwindow / 2];
+           
+
+            while (processer_is_alive)
+            {
+                qnt_in_buffer = fft_buffer.Count;
+                if (processer_is_running)
+                {
+                    if (qnt_in_buffer > 0)
+                    {
+                        fft_access_control.WaitOne();
+                        values_fft = fft_buffer.Dequeue();
+                        fft_access_control.ReleaseMutex();
+
+
+                        //FFT
+                        for (int i = 0; i < fftwindow; i++)
+                        {
+                            realFFT[i] = values_fft[i];
+                            imFFT[i] = 0;
+                        }
+                        fft.init(fftN);
+                        fft.run(realFFT, imFFT);
+
+                        chart2.Invoke(new Action(() =>
+                        {
+                            chart2.Series[0].Points.Clear();
+                        }));
+                        for (int i = 0; i < pow.Length; i++)
+                        {
+                            freqs[i] = i * ((freq_aquire / 2) / (fftwindow / 2));
+                            pow[i] = Math.Sqrt(Math.Pow(realFFT[i], 2) + Math.Pow(imFFT[i], 2));
+                            chart2.Invoke(new Action(() =>
+                            {
+                                chart2.Series[0].Points.AddXY(freqs[i], pow[i]);
+
+                            }));
+                        }
+                        chart2.Invoke(new Action(() =>
+                        {
+                            chart2.ChartAreas[0].AxisX.Minimum = 0;
+                            chart2.ChartAreas[0].AxisX.Maximum = 50;
+                        }));
+
+                        //
+                        //chart2.ChartAreas[0].AxisY.Minimum = 0;
+                        //chart2.ChartAreas[0].AxisY.Maximum = 10;
+                    }
                 }
             }
         }
