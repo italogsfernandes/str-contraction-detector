@@ -37,16 +37,24 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            arduino_description = "None";
-            max_x_points = 1500;
+            max_x_points = 1000;
+            //chart1.ChartAreas[0].AxisX.Maximum = 10;
             auto_ajuste_enabled = true;
-            plotter_is_running = true;
+
+            #region Chart
             toolStripComboBox1.SelectedIndex = 0;
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
             //chart1.Titles[0].Text = "Sensor Cardiaco";
             chart1.Series[0].BorderWidth = 1;
+            chart1.ChartAreas[0].AxisX.Title = "Pontos";
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
+            chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0.0}";
+            #endregion
 
+            #region Porta Serial do Arduino
+            arduino_description = "None";
             arduinoPort = new SerialPort();
+            arduinoPort.ReadBufferSize = 20000;
             arduinoPort.PortName = GetArduinoSerialPort();
             arduinoPort.BaudRate = 115200;
             arduinoPort.ReadTimeout = 1000;
@@ -61,20 +69,25 @@ namespace ArduinoPlotter
                 MessageBox.Show("Erro ao procurar a porta serial.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-           
+            #endregion
+
+            #region Threads
+            plotter_is_running = true;
             access_control = new Mutex();
-            data_read = new CircularBuffer<UInt16>(10240);
-            toolStripProgressBar1.Maximum = 1023;
+            data_read = new CircularBuffer<UInt16>(12000);
+            toolStripProgressBar1.Maximum = 12000;
             aquirer = new Thread(doAquire);
             plotter = new Thread(doPlot);
             plotter_is_alive = true;
             aquirer_is_alive = true;
-            aquirer.Priority = ThreadPriority.Normal;
+            aquirer.Priority = ThreadPriority.Highest;
             plotter.Priority = ThreadPriority.Normal;
             aquirer.Start();
             plotter.Start();
-            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
-            chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0.0}";
+            #endregion
+
+           
+        
         }
 
         public string GetArduinoSerialPort()
@@ -104,7 +117,7 @@ namespace ArduinoPlotter
                         {
                             string portDescription = obj["Caption"].ToString();
                             arduino_description = portDescription;
-                            string resultado = portDescription.Substring(portDescription.Length - 6,5);
+                            string resultado = portDescription.Substring(portDescription.Length - 5,4);
                             return resultado;
                         }
                     }
@@ -132,43 +145,53 @@ namespace ArduinoPlotter
         {
             int data2plot;
             char valor_lido;
+            bool retorno_circular_buffer;
             while (aquirer_is_alive)
             {
                 try
                 {
                     if (arduinoPort.IsOpen)
                     {
-                        while (arduinoPort.BytesToRead > 4)
+                        //Clear the buffer if needed
+                        //int N = arduinoPort.BytesToRead;
+                        //for (int i = 0; i < N; i++)
+                        //    arduinoPort.ReadByte();
+                        if (arduinoPort.BytesToRead > 4)
                         {
                             valor_lido = (char)arduinoPort.ReadChar();
-                            if (valor_lido == '$')
-                            {
+                            if (valor_lido == '$') {
                                 data2plot = arduinoPort.ReadByte();
                                 data2plot = (data2plot << 8) | arduinoPort.ReadByte();
                                 valor_lido = (char)arduinoPort.ReadChar();
-                                if (valor_lido == '\n')
-                                {
 
-                                    bool retorno_circular_buffer;
+                                if (valor_lido == '\n') {
+
                                     access_control.WaitOne();
                                     retorno_circular_buffer = data_read.Enqueue(Convert.ToUInt16(data2plot));
                                     access_control.ReleaseMutex();
-                                    if (!retorno_circular_buffer)
-                                    {
+
+                                    if (!retorno_circular_buffer){ //Se nao foi possivel adicionar ao buffer:
+                                        #region Mostra Mensagem de Erro
                                         statusStrip1.Invoke(new Action(() =>
                                         {
                                             LabelStatusConexao.Text = "Buffer Cheio - " + arduinoPort.PortName.ToString();
                                         }));
-                                        
-                                        MessageBox.Show("O buffer de dados encheu.", "Erro na Aquisição",
-                                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         aquirer_is_alive = false;
                                         plotter_is_alive = false;
+                                        MessageBox.Show("O buffer de dados encheu.", "Erro na Aquisição",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endregion
                                     }
                                     
                                 }
                             }
+                            statusStrip1.BeginInvoke(new Action(() =>
+                            {
+                                serialbufferlabel.Text = "Serial Port Buffer: " + (arduinoPort.BytesToRead).ToString() + " of " + arduinoPort.ReadBufferSize.ToString();
+                            }));
+
                         }
+
                     }
                 }
                 catch (Exception)
@@ -185,17 +208,19 @@ namespace ArduinoPlotter
         {
             UInt16 value2plot;
             int qnt_in_buffer;
-            double freq_aquire = 500;
+            int qnt_anterior_in_buffer = 0;
+            double freq_aquire = 1000;
             double time_increment = 1.0 / freq_aquire;
             double time_stamp = 0;
-            int qnt_anterior_in_buffer = 0;
+
             while (plotter_is_alive)
             {
+                Thread.Sleep(50);
                 qnt_in_buffer = data_read.Count;
                 #region Atualiza Label
                 if (qnt_in_buffer != qnt_anterior_in_buffer)
                 {
-                    statusStrip1.BeginInvoke(new Action(() =>
+                    statusStrip1.Invoke(new Action(() =>
                     {
                         labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
                         toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
@@ -204,38 +229,38 @@ namespace ArduinoPlotter
                 qnt_anterior_in_buffer = qnt_in_buffer;
                 #endregion
 
-
                 if (plotter_is_running)
                 {
+                    access_control.WaitOne();
                     while (qnt_in_buffer > 0)
                     {
-                        access_control.WaitOne();
+                       
                         value2plot = data_read.Dequeue();
-                        access_control.ReleaseMutex();
+                        
 
                         time_stamp += time_increment;
                         chart1.Invoke(new Action(() =>
                         {
-                            chart1.Series[0].Points.AddXY(time_stamp, value2plot);
+                        chart1.Series[0].Points.AddY(value2plot);// time_stamp, value2plot);
 
                             if (chart1.Series[0].Points.Count > max_x_points)
                             {
                                 chart1.Series[0].Points.RemoveAt(0);
-                                chart1.ChartAreas[0].AxisX.Minimum += time_increment;
-                                chart1.ChartAreas[0].AxisX.Maximum += time_increment;
+                                //chart1.ChartAreas[0].AxisX.Minimum += time_increment;
+                                //chart1.ChartAreas[0].AxisX.Maximum += time_increment;
                             }
-                            //if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
-                            //{
-                            //    chart1.ChartAreas[0].AxisY.Maximum = value2plot;
-                            //    txAxisYMax.Text = value2plot.ToString("#.##");
-                            //}
+                            if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
+                            {
+                                chart1.ChartAreas[0].AxisY.Maximum = value2plot;
+                                txAxisYMax.Text = value2plot.ToString("#.##");
+                            }
                         }));
 
                         qnt_in_buffer = data_read.Count;
                         #region Atualiza Label
                         if (qnt_in_buffer != qnt_anterior_in_buffer)
                         {
-                            statusStrip1.BeginInvoke(new Action(() =>
+                            statusStrip1.Invoke(new Action(() =>
                             {
                                 labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
                                 toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
@@ -244,6 +269,8 @@ namespace ArduinoPlotter
                         qnt_anterior_in_buffer = qnt_in_buffer;
                         #endregion
                     }
+                    access_control.ReleaseMutex();
+
                 }
             }
         }
@@ -281,7 +308,6 @@ namespace ArduinoPlotter
                 Console.WriteLine(exc.Message);
             }
         }
-
 
         private void toolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {

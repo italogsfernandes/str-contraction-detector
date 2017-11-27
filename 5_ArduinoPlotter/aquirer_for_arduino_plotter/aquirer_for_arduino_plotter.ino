@@ -16,7 +16,7 @@
 #define UART_START '$'
 #define UART_END '\n'
 
-#define AQUIRE_FREQ 75
+#define AQUIRE_FREQ 100
 ///////////
 //Clases //
 ///////////

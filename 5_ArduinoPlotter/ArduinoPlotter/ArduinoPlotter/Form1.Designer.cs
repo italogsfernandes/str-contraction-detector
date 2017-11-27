@@ -54,6 +54,7 @@
             this.sobreToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pausePlotterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.serialbufferlabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
@@ -65,10 +66,11 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.labelStatus,
             this.LabelStatusConexao,
-            this.toolStripProgressBar1});
+            this.toolStripProgressBar1,
+            this.serialbufferlabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 325);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(639, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(757, 22);
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -96,7 +98,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 24);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(639, 301);
+            this.panel1.Size = new System.Drawing.Size(757, 301);
             this.panel1.TabIndex = 2;
             // 
             // chart1
@@ -112,7 +114,7 @@
             series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(639, 301);
+            this.chart1.Size = new System.Drawing.Size(757, 301);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             title1.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -129,7 +131,7 @@
             this.pausePlotterToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(639, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(757, 24);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -246,11 +248,17 @@
             this.timer1.Interval = 1;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // serialbufferlabel
+            // 
+            this.serialbufferlabel.Name = "serialbufferlabel";
+            this.serialbufferlabel.Size = new System.Drawing.Size(73, 17);
+            this.serialbufferlabel.Text = "Serial Buffer:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(639, 347);
+            this.ClientSize = new System.Drawing.Size(757, 347);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
@@ -293,6 +301,7 @@
         private System.Windows.Forms.ToolStripMenuItem pausePlotterToolStripMenuItem;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.ToolStripStatusLabel serialbufferlabel;
     }
 }
 
