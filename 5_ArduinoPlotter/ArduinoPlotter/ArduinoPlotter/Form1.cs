@@ -53,18 +53,21 @@ namespace ArduinoPlotter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            max_x_points = 500;
-            fftN = 8; //2^8 = 256
+            #region Variaveis ajustaveis:
+            freq_aquire = 1000;
+            //max_x_points = 1000;
+
+            fftN = 10; //2^10 = 1024
             fftwindow = (int)Math.Pow(2, fftN);
-            
+            //fftwindow = 256; //log2(256) = 8;
+            //fftN = (uint)Math.Log(fftwindow, 2);
+            #endregion
 
-            freq_aquire = 100;
-            //chart1.ChartAreas[0].AxisX.Maximum = 10;
-            auto_ajuste_enabled = true;
-
+            #region Buffers
             fft_buffer = new CircularBuffer<UInt16[]>();
             data_read = new CircularBuffer<UInt16>(12000);
             toolStripProgressBar1.Maximum = 12000;
+            #endregion
 
             #region Chart
             toolStripComboBox1.SelectedIndex = 0;
@@ -74,8 +77,11 @@ namespace ArduinoPlotter
             chart1.ChartAreas[0].AxisX.Title = "Pontos";
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "{0:0.0}";
             chart1.ChartAreas[0].AxisY.LabelStyle.Format = "{0:0.0}";
-            #endregion
 
+            chart2.ChartAreas[0].AxisY.Title = "Energia [|S(f)|^2]";
+            chart2.ChartAreas[0].AxisX.Title = "Frequência [Hz]";
+            auto_ajuste_enabled = true;
+            #endregion
 
             #region Porta Serial do Arduino
             arduino_description = "None";
@@ -116,8 +122,6 @@ namespace ArduinoPlotter
             processer.Start();
             #endregion
 
-           
-        
         }
 
         public string GetArduinoSerialPort()
@@ -186,10 +190,6 @@ namespace ArduinoPlotter
                 {
                     if (arduinoPort.IsOpen)
                     {
-                        //Clear the buffer if needed
-                        //int N = arduinoPort.BytesToRead;
-                        //for (int i = 0; i < N; i++)
-                        //    arduinoPort.ReadByte();
                         if (arduinoPort.BytesToRead > 4)
                         {
                             valor_lido = (char)arduinoPort.ReadChar();
@@ -256,6 +256,33 @@ namespace ArduinoPlotter
             double time_increment = 1.0 / freq_aquire;
             double time_stamp = 0;
 
+            int qnt_points_every_plot;
+            int qnt_points_chart;
+            double time_every_plot;
+            double total_time_chart;
+            time_every_plot = 0.1; //plot each 100ms
+            total_time_chart = 3;//5 segundos, deve ser multiplot de time_every_plot
+
+            qnt_points_every_plot = (int) (freq_aquire * (time_every_plot));//freq_aquire - > 1s ------------ qnt_points_every_plot - > 100ms
+            qnt_points_chart = (int) ((total_time_chart / time_every_plot) * qnt_points_every_plot);
+
+            #region Vetores do grafico
+            //Vetor de tempo
+            double[] time_values;
+            time_values = new double[qnt_points_chart];
+            for (int i = 0; i < qnt_points_chart; i++) { time_values[i] = i * time_increment; }
+
+            //Vetor de dados para plotar
+            double[] y_values;
+            y_values = new double[qnt_points_chart];
+            for (int i = 0; i < qnt_points_chart; i++) { y_values[i] = 0; }
+
+            //Vetor de dados colorir
+            double[] color_values;
+            color_values = new double[qnt_points_chart];
+            for (int i = 0; i < qnt_points_chart; i++) { color_values[i] = time_values[i] > (total_time_chart - 1)?3.0:-3.0; }
+            #endregion
+
             while (plotter_is_alive)
             {
                 qnt_in_buffer = data_read.Count;
@@ -273,27 +300,48 @@ namespace ArduinoPlotter
 
                 if (plotter_is_running)
                 {
-                    if(qnt_in_buffer > 0)
+                    if(qnt_in_buffer > qnt_points_every_plot)
                     {
+                        for (int i = 0; i < (qnt_points_chart - qnt_points_every_plot); i++)
+                        {
+                            y_values[i] = y_values[i+ qnt_points_every_plot];
+                        }
+
                         access_control.WaitOne();
-                        value2plot = data_read.Dequeue();
+                        for (int i = (qnt_points_chart - qnt_points_every_plot); i < qnt_points_chart; i++)
+                        {
+                            y_values[i] = (data_read.Dequeue() - 512)*5.0 / 1023.0;
+                        }
                         access_control.ReleaseMutex();
-                        time_stamp += time_increment;
+
+                        //time_stamp += time_increment;
                         chart1.Invoke(new Action(() =>
                         {
-                        chart1.Series[0].Points.AddXY( time_stamp, value2plot);
+                            chart1.Series[0].Points.DataBindXY(time_values, y_values);
+                            //chart1.Series[1].Points.DataBindXY(time_values, color_values);
 
-                            if (chart1.Series[0].Points.Count > max_x_points)
-                            {
-                                chart1.Series[0].Points.RemoveAt(0);
-                                chart1.ChartAreas[0].AxisX.Minimum += time_increment;
-                                chart1.ChartAreas[0].AxisX.Maximum += time_increment;
-                            }
-                            if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
-                            {
-                                chart1.ChartAreas[0].AxisY.Maximum = value2plot;
-                                txAxisYMax.Text = value2plot.ToString("#.##");
-                            }
+                            chart1.ChartAreas[0].AxisY.Minimum = -3;
+                            chart1.ChartAreas[0].AxisX.Maximum = 3;
+                            
+
+                            //chart1.ChartAreas[0].AxisX.Minimum = 0;
+                            //chart1.ChartAreas[0].AxisX.Maximum = total_time_chart;
+
+                            //chart1.Series[0].Points.AddXY( time_stamp, (value2plot-512)*5/1023.0);
+
+                            //if (chart1.Series[0].Points.Count > max_x_points)
+                            //{
+                            //    chart1.Series[0].Points.RemoveAt(0);
+                            //    chart1.ChartAreas[0].AxisX.Minimum += time_increment;
+                            //    chart1.ChartAreas[0].AxisX.Maximum += time_increment;
+                            //}
+                            //if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
+                            //{
+                            //    //chart1.ChartAreas[0].AxisY.Maximum = value2plot;
+                            //    chart1.ChartAreas[0].AxisY.Minimum = -3;
+                            //    chart1.ChartAreas[0].AxisY.Maximum = 3;
+                            //    txAxisYMax.Text = value2plot.ToString("#.##");
+                            //}
                         }));
 
                         qnt_in_buffer = data_read.Count;
@@ -339,7 +387,7 @@ namespace ArduinoPlotter
                         //FFT
                         for (int i = 0; i < fftwindow; i++)
                         {
-                            realFFT[i] = values_fft[i];
+                            realFFT[i] = values_fft[i] - 512;
                             imFFT[i] = 0;
                         }
                         fft.init(fftN);
@@ -353,16 +401,22 @@ namespace ArduinoPlotter
                         {
                             freqs[i] = i * ((freq_aquire / 2) / (fftwindow / 2));
                             pow[i] = Math.Sqrt(Math.Pow(realFFT[i], 2) + Math.Pow(imFFT[i], 2));
-                            chart2.Invoke(new Action(() =>
-                            {
-                                chart2.Series[0].Points.AddXY(freqs[i], pow[i]);
+                            //chart2.Invoke(new Action(() =>
+                            //{
+                            //    chart2.Series[0].Points.AddXY(freqs[i], pow[i]);
 
-                            }));
+                            //}));
                         }
+
                         chart2.Invoke(new Action(() =>
                         {
+                            chart2.Series[0].Points.DataBindXY(freqs, pow);
+
                             chart2.ChartAreas[0].AxisX.Minimum = 0;
-                            chart2.ChartAreas[0].AxisX.Maximum = 50;
+                            chart2.ChartAreas[0].AxisX.Maximum = 500;
+                            
+                            //chart2.ChartAreas[0].AxisY.Minimum = 0;
+                            //chart2.ChartAreas[0].AxisY.Maximum = 2000;
                         }));
 
                         //

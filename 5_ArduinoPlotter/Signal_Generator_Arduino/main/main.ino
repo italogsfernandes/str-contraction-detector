@@ -322,7 +322,7 @@ class SignalGenerator {
     double get_next() {
       switch (_waveform) {
         case SIN_WAVE:
-          _actual_value = sin_wave[_actual_index*50];
+          _actual_value = sin_wave[_actual_index*10];
           break;
         case SQUARE_WAVE:
           _actual_index > 250 ? _actual_value = -1 : _actual_value = 1;
@@ -343,14 +343,14 @@ class SignalGenerator {
           _actual_value = ecg_wave[_actual_index];
           break;
         case EMG_WAVE:
-          _actual_value = emg_wave[_actual_index*10]; //Work around
+          _actual_value = emg_wave[_actual_index]; //Work around
           break;
         case ADC_WAVE:
           _actual_value = (double) analogRead(PINOADC) / 1024.0;
           break;
       }
       _actual_value = _actual_value * _amplitude + _offset;
-      ++_actual_index %= 10; //Incremento circular
+      ++_actual_index %= 2200; //Incremento circular
       return _actual_value;
     }
 
@@ -464,17 +464,17 @@ void setup() {
   Serial.println("Signal Generator Started!");
   my_generator.setOffset(512);
   my_generator.setAmplitude(512);
-  my_generator.setWaveform(SIN_WAVE);
+  my_generator.setWaveform(EMG_WAVE);
   //  my_generator.setFreq(1); //1Hz
   //  my_generator.start();
   delay(100);
-  Timer3.attachInterrupt(timerDataAcq).setFrequency(100).start();//100Hz
+  Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();//100Hz
 }
 void loop() {
   if (Serial.available()) {
     switch (Serial.read()) {
       case 's':
-        Timer3.attachInterrupt(timerDataAcq).setFrequency(100).start();//100Hz
+        Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();//100Hz
         break;
       case 'p':
         Timer3.stop();
