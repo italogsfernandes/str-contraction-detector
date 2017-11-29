@@ -81,6 +81,10 @@ namespace ArduinoPlotter
             chart2.ChartAreas[0].AxisY.Title = "Energia [|S(f)|^2]";
             chart2.ChartAreas[0].AxisX.Title = "Frequência [Hz]";
             auto_ajuste_enabled = true;
+
+            chart1.Series[1].Color =Color.FromArgb(100,Color.LightGreen);// new Color(255,144,238,244);
+                //Color.LightGreen;
+            //chart1.Series[1].Color.A = 100;
             #endregion
 
             #region Porta Serial do Arduino
@@ -280,22 +284,25 @@ namespace ArduinoPlotter
             //Vetor de dados colorir
             double[] color_values;
             color_values = new double[qnt_points_chart];
-            for (int i = 0; i < qnt_points_chart; i++) { color_values[i] = time_values[i] > (total_time_chart - 1)?3.0:-3.0; }
+            for (int i = 0; i < qnt_points_chart; i++) { color_values[i] = time_values[i] > (total_time_chart - (fftwindow/freq_aquire))?3.0:-3.0; }
+
+            int counter_cor_fft;
+            counter_cor_fft = fftwindow;
             #endregion
 
             while (plotter_is_alive)
             {
                 qnt_in_buffer = data_read.Count;
                 #region Atualiza Label
-                if (qnt_in_buffer != qnt_anterior_in_buffer)
-                {
-                    statusStrip1.Invoke(new Action(() =>
-                    {
-                        labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
-                        toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
-                    }));
-                }
-                qnt_anterior_in_buffer = qnt_in_buffer;
+                //if (qnt_in_buffer != qnt_anterior_in_buffer)
+                //{
+                //    statusStrip1.Invoke(new Action(() =>
+                //    {
+                //        labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
+                //        toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
+                //    }));
+                //}
+                //qnt_anterior_in_buffer = qnt_in_buffer;
                 #endregion
 
                 if (plotter_is_running)
@@ -305,57 +312,37 @@ namespace ArduinoPlotter
                         for (int i = 0; i < (qnt_points_chart - qnt_points_every_plot); i++)
                         {
                             y_values[i] = y_values[i+ qnt_points_every_plot];
-                        }
+                            color_values[i] = color_values[i + qnt_points_every_plot];
 
+                        }
+                        
                         access_control.WaitOne();
                         for (int i = (qnt_points_chart - qnt_points_every_plot); i < qnt_points_chart; i++)
                         {
                             y_values[i] = (data_read.Dequeue() - 512)*5.0 / 1023.0;
+                            color_values[i] = -3;
                         }
                         access_control.ReleaseMutex();
+
+                        counter_cor_fft -= qnt_points_every_plot;
+                        if (counter_cor_fft <= 0)
+                        {
+                            for (int i = 0; i < qnt_points_chart; i++) { color_values[i] = time_values[i] > (total_time_chart - (fftwindow / freq_aquire)) ? 3.0 : -3.0; }
+                            counter_cor_fft = fftwindow;
+                        }
 
                         //time_stamp += time_increment;
                         chart1.Invoke(new Action(() =>
                         {
                             chart1.Series[0].Points.DataBindXY(time_values, y_values);
-                            //chart1.Series[1].Points.DataBindXY(time_values, color_values);
+                            chart1.Series[1].Points.DataBindXY(time_values, color_values);
 
                             chart1.ChartAreas[0].AxisY.Minimum = -3;
                             chart1.ChartAreas[0].AxisX.Maximum = 3;
                             
-
-                            //chart1.ChartAreas[0].AxisX.Minimum = 0;
-                            //chart1.ChartAreas[0].AxisX.Maximum = total_time_chart;
-
-                            //chart1.Series[0].Points.AddXY( time_stamp, (value2plot-512)*5/1023.0);
-
-                            //if (chart1.Series[0].Points.Count > max_x_points)
-                            //{
-                            //    chart1.Series[0].Points.RemoveAt(0);
-                            //    chart1.ChartAreas[0].AxisX.Minimum += time_increment;
-                            //    chart1.ChartAreas[0].AxisX.Maximum += time_increment;
-                            //}
-                            //if (auto_ajuste_enabled && value2plot > chart1.ChartAreas[0].AxisY.Maximum)
-                            //{
-                            //    //chart1.ChartAreas[0].AxisY.Maximum = value2plot;
-                            //    chart1.ChartAreas[0].AxisY.Minimum = -3;
-                            //    chart1.ChartAreas[0].AxisY.Maximum = 3;
-                            //    txAxisYMax.Text = value2plot.ToString("#.##");
-                            //}
+                            chart1.ChartAreas[0].AxisX.Minimum = 0;
+                            chart1.ChartAreas[0].AxisX.Maximum = total_time_chart;
                         }));
-
-                        qnt_in_buffer = data_read.Count;
-                        #region Atualiza Label
-                        if (qnt_in_buffer != qnt_anterior_in_buffer)
-                        {
-                            statusStrip1.Invoke(new Action(() =>
-                            {
-                                labelStatus.Text = "Status: " + qnt_in_buffer.ToString() + " dados no Buffer.";
-                                toolStripProgressBar1.Increment(qnt_in_buffer - qnt_anterior_in_buffer);
-                            }));
-                        }
-                        qnt_anterior_in_buffer = qnt_in_buffer;
-                        #endregion
                     }
 
                 }
@@ -393,19 +380,10 @@ namespace ArduinoPlotter
                         fft.init(fftN);
                         fft.run(realFFT, imFFT);
 
-                        chart2.Invoke(new Action(() =>
-                        {
-                            chart2.Series[0].Points.Clear();
-                        }));
                         for (int i = 0; i < pow.Length; i++)
                         {
                             freqs[i] = i * ((freq_aquire / 2) / (fftwindow / 2));
                             pow[i] = Math.Sqrt(Math.Pow(realFFT[i], 2) + Math.Pow(imFFT[i], 2));
-                            //chart2.Invoke(new Action(() =>
-                            //{
-                            //    chart2.Series[0].Points.AddXY(freqs[i], pow[i]);
-
-                            //}));
                         }
 
                         chart2.Invoke(new Action(() =>
@@ -413,15 +391,9 @@ namespace ArduinoPlotter
                             chart2.Series[0].Points.DataBindXY(freqs, pow);
 
                             chart2.ChartAreas[0].AxisX.Minimum = 0;
-                            chart2.ChartAreas[0].AxisX.Maximum = 500;
-                            
-                            //chart2.ChartAreas[0].AxisY.Minimum = 0;
-                            //chart2.ChartAreas[0].AxisY.Maximum = 2000;
+                            chart2.ChartAreas[0].AxisX.Maximum = freq_aquire/2;
+                           
                         }));
-
-                        //
-                        //chart2.ChartAreas[0].AxisY.Minimum = 0;
-                        //chart2.ChartAreas[0].AxisY.Maximum = 10;
                     }
                 }
             }
