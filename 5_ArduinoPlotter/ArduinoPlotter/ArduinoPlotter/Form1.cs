@@ -197,12 +197,12 @@ namespace ArduinoPlotter
                         if (arduinoPort.BytesToRead > 4)
                         {
                             valor_lido = (char)arduinoPort.ReadChar();
-                            if (valor_lido == '$') {
+                            if (valor_lido == 'j') {
                                 data2plot = arduinoPort.ReadByte();
                                 data2plot = (data2plot << 8) | arduinoPort.ReadByte();
-                                valor_lido = (char)arduinoPort.ReadChar();
+                                //valor_lido = (char)arduinoPort.ReadChar();
 
-                                if (valor_lido == '\n') {
+                                if (true){//valor_lido == '\n') {
 
                                     //Adicionar no buffer de plotagem
                                     access_control.WaitOne();
@@ -279,8 +279,10 @@ namespace ArduinoPlotter
             //Vetor de dados para plotar
             double[] y_values;
             y_values = new double[qnt_points_chart];
-            for (int i = 0; i < qnt_points_chart; i++) { y_values[i] = 0; }
-
+            for (int i = 0; i < qnt_points_chart; i++) {
+                y_values[i] = 0;
+            }
+            
             //Vetor de dados colorir
             double[] color_values;
             color_values = new double[qnt_points_chart];
@@ -358,7 +360,7 @@ namespace ArduinoPlotter
             double[] pow = new double[fftwindow / 2];
             double[] freqs = new double[fftwindow / 2];
            
-
+            
             while (processer_is_alive)
             {
                 qnt_in_buffer = fft_buffer.Count;
@@ -390,8 +392,12 @@ namespace ArduinoPlotter
                         {
                             chart2.Series[0].Points.DataBindXY(freqs, pow);
 
+                            //chart2.ChartAreas[0].AxisY.Minimum = 0;
+                            //chart2.ChartAreas[0].AxisY.Maximum = 10000;
+
+
                             chart2.ChartAreas[0].AxisX.Minimum = 0;
-                            chart2.ChartAreas[0].AxisX.Maximum = freq_aquire/2;
+                            chart2.ChartAreas[0].AxisX.Maximum = 20;// freq_aquire/2;
                            
                         }));
                     }

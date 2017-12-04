@@ -322,7 +322,7 @@ class SignalGenerator {
     double get_next() {
       switch (_waveform) {
         case SIN_WAVE:
-          _actual_value = sin_wave[_actual_index*10];
+          _actual_value = sin_wave[_actual_index*5];
           break;
         case SQUARE_WAVE:
           _actual_index > 250 ? _actual_value = -1 : _actual_value = 1;
@@ -350,7 +350,7 @@ class SignalGenerator {
           break;
       }
       _actual_value = _actual_value * _amplitude + _offset;
-      ++_actual_index %= 2200; //Incremento circular
+      ++_actual_index %= 100; //Incremento circular
       return _actual_value;
     }
 
@@ -387,10 +387,10 @@ class SignalGenerator {
       //analogWrite(DAC0,(uint16_t) _actual_value);
       //analogWrite(DAC1,(uint16_t) _actual_value);
       //Serial.println(String((uint16_t) _actual_value));
-      Serial.write('$');
+      Serial.write('j');
       Serial.write((uint8_t) ((uint16_t) _actual_value >> 8));
       Serial.write((uint8_t) ((uint16_t) _actual_value));
-      Serial.write('\n');
+      //Serial.write('\n');
     
     }
 
@@ -464,7 +464,7 @@ void setup() {
   Serial.println("Signal Generator Started!");
   my_generator.setOffset(512);
   my_generator.setAmplitude(512);
-  my_generator.setWaveform(EMG_WAVE);
+  my_generator.setWaveform(SIN_WAVE);
   //  my_generator.setFreq(1); //1Hz
   //  my_generator.start();
   delay(100);
