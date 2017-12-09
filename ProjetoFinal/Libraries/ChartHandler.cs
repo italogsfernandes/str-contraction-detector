@@ -22,25 +22,32 @@ namespace LibrariesExample
         public int qnt_pontos;
         public double[] y_values;
 
-        public ChartHandler(ref Chart _chart,string chartAreaName = "ChartArea1",
-            string chartTitle = "Gráfico",
-            string xtitle = "Tempo (s)", string ytitle = "Tensão (V)")
+        public ChartHandler(ref Chart _chart, int _qnt_points = 20)
         {
             chart = _chart;
             chartArea = new ChartArea();
             titleChart = new Title();
             series = new Series();
-            this.ConfigureChart(chartAreaName, chartTitle, xtitle, ytitle);
 
-            qnt_pontos = 15;
-            y_values = new double[qnt_pontos];
+            this.SetQntPoints(_qnt_points);
 
-            PlotterBuffer = new CircularBuffer<double>(qnt_pontos);
+            this.ConfigureChart();
 
             PlotterUpdater = new Timer();
             PlotterUpdater.Interval = 100;
             PlotterUpdater.Tick += PlotterUpdater_Tick;
 
+            series.Points.DataBindY(y_values);
+            chartArea.AxisX.Minimum = 0;
+            chartArea.AxisX.Maximum = qnt_pontos;
+
+        }
+
+        public void SetQntPoints(int qnt = 15)
+        {
+            qnt_pontos = qnt;
+            y_values = new double[qnt_pontos];
+            PlotterBuffer = new CircularBuffer<double>(qnt_pontos);
         }
 
         #region Ajustando o Chart
@@ -63,13 +70,9 @@ namespace LibrariesExample
         public void ConfigureChartArea(string chartAreaName = "ChartArea1")
         {
             chartArea.Name = chartAreaName;
-            chartArea.AxisX.Minimum = 0;
-            chartArea.AxisX.Maximum = qnt_pontos;
-            //chartArea.AxisX.Minimum = 0;
-            //chartArea.AxisY.Maximum = qnt_pontos;
-            chartArea.AxisX.LabelStyle.Format = "{0:0.0}";
+            chartArea.AxisX.LabelStyle.Format = "{0}";
             chartArea.AxisX.LabelStyle.Font = new Font("Arial", 8.0F, FontStyle.Bold);
-            chartArea.AxisY.LabelStyle.Format = "{0:0.0}";
+            chartArea.AxisY.LabelStyle.Format = "{0.00}";
             chartArea.AxisY.LabelStyle.Font = new Font("Arial", 8.0F, FontStyle.Bold);
             chartArea.BackColor = Color.White; //Cor de fundo da chartArea
             //Vinculando ao chart
@@ -130,6 +133,8 @@ namespace LibrariesExample
 
                 //Joga todo o conjunto de pontos no chart
                 series.Points.DataBindY(y_values);
+                chartArea.AxisX.Minimum = 0;
+                chartArea.AxisX.Maximum = qnt_pontos;
             }
         }
 

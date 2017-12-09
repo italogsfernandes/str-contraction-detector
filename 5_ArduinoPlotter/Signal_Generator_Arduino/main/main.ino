@@ -468,13 +468,13 @@ void setup() {
   //  my_generator.setFreq(1); //1Hz
   //  my_generator.start();
   delay(100);
-  Timer3.attachInterrupt(timerDataAcq).setFrequency(3).start();
+  Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();
 }
 void loop() {
   if (Serial.available()) {
     switch (Serial.read()) {
       case 's':
-        Timer3.attachInterrupt(timerDataAcq).setFrequency(3).start();
+        Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();
         break;
       case 'p':
         Timer3.stop();

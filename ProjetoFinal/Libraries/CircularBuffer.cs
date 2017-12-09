@@ -42,6 +42,17 @@ namespace LibrariesExample
             get { return (int)_capacidade; }
         }
 
+        public T[] GetBuffer {
+            get { return _buffer; }
+        }
+
+        public int GetHead {
+            get { return (int)_head; }
+        }
+        public int GetTail {
+            get { return (int)_tail; }
+        }
+
         //
         // Summary:
         //     Initializes a new instance of the CircularBuffer`1 class that

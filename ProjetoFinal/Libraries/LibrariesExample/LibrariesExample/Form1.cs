@@ -25,14 +25,16 @@ namespace LibrariesExample
         ThreadHandler aduinodataconsumer;
         Timer arduinoBufferLabel;
         #endregion
-        #region ChartOptimized
+        #region ChartHandler
         ChartHandler mychart;
         #endregion
+        #region ArduinoPlotter
+        ArduinoPlotter myArduinoPlotter;
+        #endregion 
         public Form1()
         {
             InitializeComponent();
         }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             #region Circular Buffer
@@ -54,8 +56,24 @@ namespace LibrariesExample
             #region ChartHandler
             mychart = new ChartHandler(ref chart1);
             #endregion
+            #region ArduinoPlotter
+            myArduinoPlotter = new ArduinoPlotter(ref chart2, ref label9);
+            #endregion
         }
-
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            #region ThreadHandler
+            mythread.Stop();
+            #endregion
+            #region ArduinoHandler
+            aduinodataconsumer.Stop();
+            myarduinohandler.StopAquisition();
+            arduinoBufferLabel.Stop();
+            #endregion
+            #region ArduinoPlotter
+            myArduinoPlotter.Finish();
+            #endregion
+        }
         #region Circular Buffer
         private void updateListView()
         {
@@ -64,6 +82,24 @@ namespace LibrariesExample
             {
                 listView1.Items.Add(item);
             }
+        }
+        
+        private void updateLabelStatusCircularBuffer()
+        {
+            string[] bbuffer = mycircularbuffer.GetBuffer;
+            string tdjunto = "";
+            foreach (string strr in bbuffer)
+            {
+                tdjunto = tdjunto + strr + ", ";
+            }
+
+            label10.Text =
+                "Exemplo da Classe CircularBuffer" +
+                "\nBuffer Capacity: " + mycircularbuffer.Capacity.ToString() +
+                "\nBuffer Count: " + mycircularbuffer.Count +
+                "\nBuffer Array: " + tdjunto +
+                "\nBuffer Head: " + mycircularbuffer.GetHead.ToString() +
+                "\nBuffer Tail: " + mycircularbuffer.GetTail.ToString();
         }
 
         private void btnEnqueue_Click(object sender, EventArgs e)
@@ -76,6 +112,8 @@ namespace LibrariesExample
                 btnEnqueue.Enabled = false;
             }
             btnDequeue.Enabled = true;
+            updateLabelStatusCircularBuffer();
+            richTextBox3.Text = txtEnqueue.Text + " Added to buffer.\n" + richTextBox3.Text;
         }
 
         private void btnDequeue_Click(object sender, EventArgs e)
@@ -87,7 +125,10 @@ namespace LibrariesExample
                 btnDequeue.Enabled = false;
             }
             btnEnqueue.Enabled = true;
+            updateLabelStatusCircularBuffer();
+            richTextBox3.Text = txtDequeue.Text + " Removed from the buffer.\n" + richTextBox3.Text;
         }
+
         #endregion
         #region ThreadHandler
         public void threadFuction()
@@ -97,6 +138,10 @@ namespace LibrariesExample
             lblResult.Invoke(new Action(() =>
             {
                 lblResult.Text = threadcounter.ToString();
+            }));
+            richTextBox2.Invoke(new Action(() =>
+            {
+                richTextBox2.Text = lblResult.Text + "\n" + richTextBox2.Text;
             }));
             System.Threading.Thread.Sleep(500);
         }
@@ -129,6 +174,10 @@ namespace LibrariesExample
                 lblResultAcq.Invoke(new Action(()=>
                 {
                     lblResultAcq.Text = myarduinohandler.bufferAquisition.SecureDequeue().ToString();
+                }));
+                richTextBox1.Invoke(new Action(() =>
+                {
+                    richTextBox1.Text = lblResultAcq.Text + "\n" + richTextBox1.Text;
                 }));
             }
         }
@@ -181,22 +230,7 @@ namespace LibrariesExample
             aduinodataconsumer.Resume();
         }
         #endregion
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            #region ThreadHandler
-            mythread.Stop();
-            #endregion
-            #region ArduinoHandler
-            aduinodataconsumer.Stop();
-            myarduinohandler.StopAquisition();
-            arduinoBufferLabel.Stop();
-            #endregion
-        }
-
-        #region ChartOptimized
-
-        #endregion
+        #region ChartHandler
 
         private void addPointToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -222,5 +256,13 @@ namespace LibrariesExample
         {
             mychart.PlotterUpdater.Stop();
         }
+
+        #endregion
+        #region ArduinoPlotter
+        private void startToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            myArduinoPlotter.Start();
+        }
+        #endregion
     }
 }

@@ -28,26 +28,28 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea12 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend12 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.listView1 = new System.Windows.Forms.ListView();
-            this.lblEnqueue = new System.Windows.Forms.Label();
-            this.txtDequeue = new System.Windows.Forms.TextBox();
-            this.btnDequeue = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtEnqueue = new System.Windows.Forms.TextBox();
-            this.btnEnqueue = new System.Windows.Forms.Button();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.lblResult = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.btnPause = new System.Windows.Forms.Button();
-            this.btnResume = new System.Windows.Forms.Button();
-            this.btnStop = new System.Windows.Forms.Button();
-            this.btnStart = new System.Windows.Forms.Button();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.label9 = new System.Windows.Forms.Label();
+            this.statusStrip2 = new System.Windows.Forms.StatusStrip();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.menuStrip2 = new System.Windows.Forms.MenuStrip();
+            this.addPointToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addToBufferToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateChartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.lblBufferSerial = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -66,202 +68,210 @@
             this.btnResumeAcq = new System.Windows.Forms.Button();
             this.btnStopAcq = new System.Windows.Forms.Button();
             this.btnStartAcq = new System.Windows.Forms.Button();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.menuStrip2 = new System.Windows.Forms.MenuStrip();
-            this.addPointToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addToBufferToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.updateChartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.stopUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.statusStrip1.SuspendLayout();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.lblResult = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.btnPause = new System.Windows.Forms.Button();
+            this.btnResume = new System.Windows.Forms.Button();
+            this.btnStop = new System.Windows.Forms.Button();
+            this.btnStart = new System.Windows.Forms.Button();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.listView1 = new System.Windows.Forms.ListView();
+            this.lblEnqueue = new System.Windows.Forms.Label();
+            this.txtDequeue = new System.Windows.Forms.TextBox();
+            this.btnDequeue = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtEnqueue = new System.Windows.Forms.TextBox();
+            this.btnEnqueue = new System.Windows.Forms.Button();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.richTextBox3 = new System.Windows.Forms.RichTextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.tabPage3.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
+            this.panel1.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.menuStrip2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 339);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(683, 22);
-            this.statusStrip1.TabIndex = 0;
-            this.statusStrip1.Text = "statusStrip1";
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage4);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(683, 339);
+            this.tabControl1.Size = new System.Drawing.Size(683, 361);
             this.tabControl1.TabIndex = 2;
             // 
-            // tabPage1
+            // tabPage5
             // 
-            this.tabPage1.Controls.Add(this.listView1);
-            this.tabPage1.Controls.Add(this.lblEnqueue);
-            this.tabPage1.Controls.Add(this.txtDequeue);
-            this.tabPage1.Controls.Add(this.btnDequeue);
-            this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Controls.Add(this.txtEnqueue);
-            this.tabPage1.Controls.Add(this.btnEnqueue);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(675, 313);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "CircularBuffer";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabPage5.BackColor = System.Drawing.Color.Transparent;
+            this.tabPage5.Controls.Add(this.chart2);
+            this.tabPage5.Controls.Add(this.panel1);
+            this.tabPage5.Controls.Add(this.statusStrip2);
+            this.tabPage5.Controls.Add(this.menuStrip1);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Size = new System.Drawing.Size(675, 335);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "ArduinoPlotter";
             // 
-            // listView1
+            // chart2
             // 
-            this.listView1.Location = new System.Drawing.Point(333, 39);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(324, 52);
-            this.listView1.TabIndex = 6;
-            this.listView1.UseCompatibleStateImageBehavior = false;
+            chartArea5.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea5);
+            this.chart2.Dock = System.Windows.Forms.DockStyle.Fill;
+            legend5.Name = "Legend1";
+            this.chart2.Legends.Add(legend5);
+            this.chart2.Location = new System.Drawing.Point(200, 24);
+            this.chart2.Name = "chart2";
+            series5.ChartArea = "ChartArea1";
+            series5.Legend = "Legend1";
+            series5.Name = "Series1";
+            this.chart2.Series.Add(series5);
+            this.chart2.Size = new System.Drawing.Size(475, 289);
+            this.chart2.TabIndex = 3;
+            this.chart2.Text = "chart2";
             // 
-            // lblEnqueue
+            // panel1
             // 
-            this.lblEnqueue.AutoSize = true;
-            this.lblEnqueue.Location = new System.Drawing.Point(19, 42);
-            this.lblEnqueue.Name = "lblEnqueue";
-            this.lblEnqueue.Size = new System.Drawing.Size(35, 13);
-            this.lblEnqueue.TabIndex = 5;
-            this.lblEnqueue.Text = "Insira:";
+            this.panel1.BackColor = System.Drawing.Color.MintCream;
+            this.panel1.Controls.Add(this.label9);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panel1.Location = new System.Drawing.Point(0, 24);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(200, 289);
+            this.panel1.TabIndex = 2;
             // 
-            // txtDequeue
+            // label9
             // 
-            this.txtDequeue.Enabled = false;
-            this.txtDequeue.Location = new System.Drawing.Point(82, 71);
-            this.txtDequeue.Name = "txtDequeue";
-            this.txtDequeue.Size = new System.Drawing.Size(128, 20);
-            this.txtDequeue.TabIndex = 4;
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(8, 12);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(40, 13);
+            this.label9.TabIndex = 0;
+            this.label9.Text = "Status:";
             // 
-            // btnDequeue
+            // statusStrip2
             // 
-            this.btnDequeue.Location = new System.Drawing.Point(216, 68);
-            this.btnDequeue.Name = "btnDequeue";
-            this.btnDequeue.Size = new System.Drawing.Size(75, 23);
-            this.btnDequeue.TabIndex = 3;
-            this.btnDequeue.Text = "Dequeue";
-            this.btnDequeue.UseVisualStyleBackColor = true;
-            this.btnDequeue.Click += new System.EventHandler(this.btnDequeue_Click);
+            this.statusStrip2.Location = new System.Drawing.Point(0, 313);
+            this.statusStrip2.Name = "statusStrip2";
+            this.statusStrip2.Size = new System.Drawing.Size(675, 22);
+            this.statusStrip2.TabIndex = 1;
+            this.statusStrip2.Text = "statusStrip2";
             // 
-            // label1
+            // menuStrip1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 74);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(57, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Valor Lido:";
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(675, 24);
+            this.menuStrip1.TabIndex = 4;
+            this.menuStrip1.Text = "menuStrip1";
             // 
-            // txtEnqueue
+            // startToolStripMenuItem
             // 
-            this.txtEnqueue.Location = new System.Drawing.Point(82, 39);
-            this.txtEnqueue.Name = "txtEnqueue";
-            this.txtEnqueue.Size = new System.Drawing.Size(128, 20);
-            this.txtEnqueue.TabIndex = 1;
+            this.startToolStripMenuItem.Name = "startToolStripMenuItem";
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
+            this.startToolStripMenuItem.Text = "Start";
+            this.startToolStripMenuItem.Click += new System.EventHandler(this.startToolStripMenuItem_Click);
             // 
-            // btnEnqueue
+            // tabPage4
             // 
-            this.btnEnqueue.Location = new System.Drawing.Point(216, 39);
-            this.btnEnqueue.Name = "btnEnqueue";
-            this.btnEnqueue.Size = new System.Drawing.Size(75, 23);
-            this.btnEnqueue.TabIndex = 0;
-            this.btnEnqueue.Text = "Enqueue";
-            this.btnEnqueue.UseVisualStyleBackColor = true;
-            this.btnEnqueue.Click += new System.EventHandler(this.btnEnqueue_Click);
+            this.tabPage4.Controls.Add(this.chart1);
+            this.tabPage4.Controls.Add(this.menuStrip2);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(675, 335);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "ChartHandler";
+            this.tabPage4.UseVisualStyleBackColor = true;
             // 
-            // tabPage2
+            // chart1
             // 
-            this.tabPage2.Controls.Add(this.lblResult);
-            this.tabPage2.Controls.Add(this.label2);
-            this.tabPage2.Controls.Add(this.btnPause);
-            this.tabPage2.Controls.Add(this.btnResume);
-            this.tabPage2.Controls.Add(this.btnStop);
-            this.tabPage2.Controls.Add(this.btnStart);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(675, 313);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "ThreadHandler";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            chartArea6.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea6);
+            this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
+            legend6.Name = "Legend1";
+            this.chart1.Legends.Add(legend6);
+            this.chart1.Location = new System.Drawing.Point(0, 24);
+            this.chart1.Name = "chart1";
+            series6.ChartArea = "ChartArea1";
+            series6.Legend = "Legend1";
+            series6.Name = "Series1";
+            this.chart1.Series.Add(series6);
+            this.chart1.Size = new System.Drawing.Size(675, 311);
+            this.chart1.TabIndex = 0;
+            this.chart1.Text = "chart1";
             // 
-            // lblResult
+            // menuStrip2
             // 
-            this.lblResult.AutoSize = true;
-            this.lblResult.Location = new System.Drawing.Point(94, 76);
-            this.lblResult.Name = "lblResult";
-            this.lblResult.Size = new System.Drawing.Size(10, 13);
-            this.lblResult.TabIndex = 5;
-            this.lblResult.Text = "-";
+            this.menuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addPointToolStripMenuItem,
+            this.addToBufferToolStripMenuItem,
+            this.updateChartToolStripMenuItem,
+            this.startUpdaterToolStripMenuItem,
+            this.stopUpdaterToolStripMenuItem});
+            this.menuStrip2.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip2.Name = "menuStrip2";
+            this.menuStrip2.Size = new System.Drawing.Size(675, 24);
+            this.menuStrip2.TabIndex = 1;
+            this.menuStrip2.Text = "menuStrip2";
             // 
-            // label2
+            // addPointToolStripMenuItem
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(29, 76);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(58, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Resultado:";
+            this.addPointToolStripMenuItem.Name = "addPointToolStripMenuItem";
+            this.addPointToolStripMenuItem.Size = new System.Drawing.Size(69, 20);
+            this.addPointToolStripMenuItem.Text = "AddPoint";
+            this.addPointToolStripMenuItem.Click += new System.EventHandler(this.addPointToolStripMenuItem_Click);
             // 
-            // btnPause
+            // addToBufferToolStripMenuItem
             // 
-            this.btnPause.Location = new System.Drawing.Point(194, 26);
-            this.btnPause.Name = "btnPause";
-            this.btnPause.Size = new System.Drawing.Size(75, 23);
-            this.btnPause.TabIndex = 3;
-            this.btnPause.Text = "Pause";
-            this.btnPause.UseVisualStyleBackColor = true;
-            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+            this.addToBufferToolStripMenuItem.Name = "addToBufferToolStripMenuItem";
+            this.addToBufferToolStripMenuItem.Size = new System.Drawing.Size(86, 20);
+            this.addToBufferToolStripMenuItem.Text = "AddToBuffer";
+            this.addToBufferToolStripMenuItem.Click += new System.EventHandler(this.addToBufferToolStripMenuItem_Click);
             // 
-            // btnResume
+            // updateChartToolStripMenuItem
             // 
-            this.btnResume.Location = new System.Drawing.Point(275, 26);
-            this.btnResume.Name = "btnResume";
-            this.btnResume.Size = new System.Drawing.Size(75, 23);
-            this.btnResume.TabIndex = 2;
-            this.btnResume.Text = "Resume";
-            this.btnResume.UseVisualStyleBackColor = true;
-            this.btnResume.Click += new System.EventHandler(this.btnResume_Click);
+            this.updateChartToolStripMenuItem.Name = "updateChartToolStripMenuItem";
+            this.updateChartToolStripMenuItem.Size = new System.Drawing.Size(86, 20);
+            this.updateChartToolStripMenuItem.Text = "UpdateChart";
+            this.updateChartToolStripMenuItem.Click += new System.EventHandler(this.updateChartToolStripMenuItem_Click);
             // 
-            // btnStop
+            // startUpdaterToolStripMenuItem
             // 
-            this.btnStop.Location = new System.Drawing.Point(113, 27);
-            this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(75, 23);
-            this.btnStop.TabIndex = 1;
-            this.btnStop.Text = "Stop";
-            this.btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            this.startUpdaterToolStripMenuItem.Name = "startUpdaterToolStripMenuItem";
+            this.startUpdaterToolStripMenuItem.Size = new System.Drawing.Size(85, 20);
+            this.startUpdaterToolStripMenuItem.Text = "StartUpdater";
+            this.startUpdaterToolStripMenuItem.Click += new System.EventHandler(this.startUpdaterToolStripMenuItem_Click);
             // 
-            // btnStart
+            // stopUpdaterToolStripMenuItem
             // 
-            this.btnStart.Location = new System.Drawing.Point(32, 27);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(75, 23);
-            this.btnStart.TabIndex = 0;
-            this.btnStart.Text = "Start";
-            this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            this.stopUpdaterToolStripMenuItem.Name = "stopUpdaterToolStripMenuItem";
+            this.stopUpdaterToolStripMenuItem.Size = new System.Drawing.Size(85, 20);
+            this.stopUpdaterToolStripMenuItem.Text = "StopUpdater";
+            this.stopUpdaterToolStripMenuItem.Click += new System.EventHandler(this.stopUpdaterToolStripMenuItem_Click);
             // 
             // tabPage3
             // 
+            this.tabPage3.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage3.Controls.Add(this.label12);
+            this.tabPage3.Controls.Add(this.richTextBox1);
             this.tabPage3.Controls.Add(this.lblBufferSerial);
             this.tabPage3.Controls.Add(this.label8);
             this.tabPage3.Controls.Add(this.btnPauseConsumer);
@@ -281,10 +291,9 @@
             this.tabPage3.Controls.Add(this.btnStartAcq);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(675, 313);
+            this.tabPage3.Size = new System.Drawing.Size(675, 335);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "ArduinoHandler";
-            this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // lblBufferSerial
             // 
@@ -445,88 +454,214 @@
             this.btnStartAcq.UseVisualStyleBackColor = true;
             this.btnStartAcq.Click += new System.EventHandler(this.btnStartAcq_Click);
             // 
-            // tabPage4
+            // tabPage2
             // 
-            this.tabPage4.Controls.Add(this.chart1);
-            this.tabPage4.Controls.Add(this.menuStrip2);
-            this.tabPage4.Location = new System.Drawing.Point(4, 22);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(675, 313);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "ChartOptimized";
-            this.tabPage4.UseVisualStyleBackColor = true;
+            this.tabPage2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage2.Controls.Add(this.label11);
+            this.tabPage2.Controls.Add(this.richTextBox2);
+            this.tabPage2.Controls.Add(this.lblResult);
+            this.tabPage2.Controls.Add(this.label2);
+            this.tabPage2.Controls.Add(this.btnPause);
+            this.tabPage2.Controls.Add(this.btnResume);
+            this.tabPage2.Controls.Add(this.btnStop);
+            this.tabPage2.Controls.Add(this.btnStart);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(675, 335);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "ThreadHandler";
             // 
-            // chart1
+            // lblResult
             // 
-            chartArea12.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea12);
-            this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
-            legend12.Name = "Legend1";
-            this.chart1.Legends.Add(legend12);
-            this.chart1.Location = new System.Drawing.Point(0, 24);
-            this.chart1.Name = "chart1";
-            series12.ChartArea = "ChartArea1";
-            series12.Legend = "Legend1";
-            series12.Name = "Series1";
-            this.chart1.Series.Add(series12);
-            this.chart1.Size = new System.Drawing.Size(675, 289);
-            this.chart1.TabIndex = 0;
-            this.chart1.Text = "chart1";
+            this.lblResult.AutoSize = true;
+            this.lblResult.Location = new System.Drawing.Point(94, 76);
+            this.lblResult.Name = "lblResult";
+            this.lblResult.Size = new System.Drawing.Size(10, 13);
+            this.lblResult.TabIndex = 5;
+            this.lblResult.Text = "-";
             // 
-            // menuStrip2
+            // label2
             // 
-            this.menuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.addPointToolStripMenuItem,
-            this.addToBufferToolStripMenuItem,
-            this.updateChartToolStripMenuItem,
-            this.startUpdaterToolStripMenuItem,
-            this.stopUpdaterToolStripMenuItem});
-            this.menuStrip2.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip2.Name = "menuStrip2";
-            this.menuStrip2.Size = new System.Drawing.Size(675, 24);
-            this.menuStrip2.TabIndex = 1;
-            this.menuStrip2.Text = "menuStrip2";
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(29, 76);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(58, 13);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "Resultado:";
             // 
-            // addPointToolStripMenuItem
+            // btnPause
             // 
-            this.addPointToolStripMenuItem.Name = "addPointToolStripMenuItem";
-            this.addPointToolStripMenuItem.Size = new System.Drawing.Size(69, 20);
-            this.addPointToolStripMenuItem.Text = "AddPoint";
-            this.addPointToolStripMenuItem.Click += new System.EventHandler(this.addPointToolStripMenuItem_Click);
+            this.btnPause.Location = new System.Drawing.Point(194, 26);
+            this.btnPause.Name = "btnPause";
+            this.btnPause.Size = new System.Drawing.Size(75, 23);
+            this.btnPause.TabIndex = 3;
+            this.btnPause.Text = "Pause";
+            this.btnPause.UseVisualStyleBackColor = true;
+            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
             // 
-            // addToBufferToolStripMenuItem
+            // btnResume
             // 
-            this.addToBufferToolStripMenuItem.Name = "addToBufferToolStripMenuItem";
-            this.addToBufferToolStripMenuItem.Size = new System.Drawing.Size(86, 20);
-            this.addToBufferToolStripMenuItem.Text = "AddToBuffer";
-            this.addToBufferToolStripMenuItem.Click += new System.EventHandler(this.addToBufferToolStripMenuItem_Click);
+            this.btnResume.Location = new System.Drawing.Point(275, 26);
+            this.btnResume.Name = "btnResume";
+            this.btnResume.Size = new System.Drawing.Size(75, 23);
+            this.btnResume.TabIndex = 2;
+            this.btnResume.Text = "Resume";
+            this.btnResume.UseVisualStyleBackColor = true;
+            this.btnResume.Click += new System.EventHandler(this.btnResume_Click);
             // 
-            // updateChartToolStripMenuItem
+            // btnStop
             // 
-            this.updateChartToolStripMenuItem.Name = "updateChartToolStripMenuItem";
-            this.updateChartToolStripMenuItem.Size = new System.Drawing.Size(86, 20);
-            this.updateChartToolStripMenuItem.Text = "UpdateChart";
-            this.updateChartToolStripMenuItem.Click += new System.EventHandler(this.updateChartToolStripMenuItem_Click);
+            this.btnStop.Location = new System.Drawing.Point(113, 27);
+            this.btnStop.Name = "btnStop";
+            this.btnStop.Size = new System.Drawing.Size(75, 23);
+            this.btnStop.TabIndex = 1;
+            this.btnStop.Text = "Stop";
+            this.btnStop.UseVisualStyleBackColor = true;
+            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
-            // startUpdaterToolStripMenuItem
+            // btnStart
             // 
-            this.startUpdaterToolStripMenuItem.Name = "startUpdaterToolStripMenuItem";
-            this.startUpdaterToolStripMenuItem.Size = new System.Drawing.Size(85, 20);
-            this.startUpdaterToolStripMenuItem.Text = "StartUpdater";
-            this.startUpdaterToolStripMenuItem.Click += new System.EventHandler(this.startUpdaterToolStripMenuItem_Click);
+            this.btnStart.Location = new System.Drawing.Point(32, 27);
+            this.btnStart.Name = "btnStart";
+            this.btnStart.Size = new System.Drawing.Size(75, 23);
+            this.btnStart.TabIndex = 0;
+            this.btnStart.Text = "Start";
+            this.btnStart.UseVisualStyleBackColor = true;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
-            // stopUpdaterToolStripMenuItem
+            // tabPage1
             // 
-            this.stopUpdaterToolStripMenuItem.Name = "stopUpdaterToolStripMenuItem";
-            this.stopUpdaterToolStripMenuItem.Size = new System.Drawing.Size(85, 20);
-            this.stopUpdaterToolStripMenuItem.Text = "StopUpdater";
-            this.stopUpdaterToolStripMenuItem.Click += new System.EventHandler(this.stopUpdaterToolStripMenuItem_Click);
+            this.tabPage1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage1.Controls.Add(this.label10);
+            this.tabPage1.Controls.Add(this.richTextBox3);
+            this.tabPage1.Controls.Add(this.listView1);
+            this.tabPage1.Controls.Add(this.lblEnqueue);
+            this.tabPage1.Controls.Add(this.txtDequeue);
+            this.tabPage1.Controls.Add(this.btnDequeue);
+            this.tabPage1.Controls.Add(this.label1);
+            this.tabPage1.Controls.Add(this.txtEnqueue);
+            this.tabPage1.Controls.Add(this.btnEnqueue);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(675, 335);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "CircularBuffer";
             // 
-            // toolStripStatusLabel1
+            // listView1
             // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.listView1.Location = new System.Drawing.Point(333, 39);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(324, 52);
+            this.listView1.TabIndex = 6;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            // 
+            // lblEnqueue
+            // 
+            this.lblEnqueue.AutoSize = true;
+            this.lblEnqueue.Location = new System.Drawing.Point(19, 42);
+            this.lblEnqueue.Name = "lblEnqueue";
+            this.lblEnqueue.Size = new System.Drawing.Size(35, 13);
+            this.lblEnqueue.TabIndex = 5;
+            this.lblEnqueue.Text = "Insira:";
+            // 
+            // txtDequeue
+            // 
+            this.txtDequeue.Enabled = false;
+            this.txtDequeue.Location = new System.Drawing.Point(82, 71);
+            this.txtDequeue.Name = "txtDequeue";
+            this.txtDequeue.Size = new System.Drawing.Size(128, 20);
+            this.txtDequeue.TabIndex = 4;
+            // 
+            // btnDequeue
+            // 
+            this.btnDequeue.Location = new System.Drawing.Point(216, 68);
+            this.btnDequeue.Name = "btnDequeue";
+            this.btnDequeue.Size = new System.Drawing.Size(75, 23);
+            this.btnDequeue.TabIndex = 3;
+            this.btnDequeue.Text = "Dequeue";
+            this.btnDequeue.UseVisualStyleBackColor = true;
+            this.btnDequeue.Click += new System.EventHandler(this.btnDequeue_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(19, 74);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(57, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Valor Lido:";
+            // 
+            // txtEnqueue
+            // 
+            this.txtEnqueue.Location = new System.Drawing.Point(82, 39);
+            this.txtEnqueue.Name = "txtEnqueue";
+            this.txtEnqueue.Size = new System.Drawing.Size(128, 20);
+            this.txtEnqueue.TabIndex = 1;
+            // 
+            // btnEnqueue
+            // 
+            this.btnEnqueue.Location = new System.Drawing.Point(216, 39);
+            this.btnEnqueue.Name = "btnEnqueue";
+            this.btnEnqueue.Size = new System.Drawing.Size(75, 23);
+            this.btnEnqueue.TabIndex = 0;
+            this.btnEnqueue.Text = "Enqueue";
+            this.btnEnqueue.UseVisualStyleBackColor = true;
+            this.btnEnqueue.Click += new System.EventHandler(this.btnEnqueue_Click);
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Location = new System.Drawing.Point(359, 33);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(70, 250);
+            this.richTextBox1.TabIndex = 21;
+            this.richTextBox1.Text = "";
+            // 
+            // richTextBox2
+            // 
+            this.richTextBox2.Location = new System.Drawing.Point(32, 108);
+            this.richTextBox2.Name = "richTextBox2";
+            this.richTextBox2.Size = new System.Drawing.Size(318, 199);
+            this.richTextBox2.TabIndex = 6;
+            this.richTextBox2.Text = "";
+            // 
+            // richTextBox3
+            // 
+            this.richTextBox3.Location = new System.Drawing.Point(22, 110);
+            this.richTextBox3.Name = "richTextBox3";
+            this.richTextBox3.Size = new System.Drawing.Size(269, 207);
+            this.richTextBox3.TabIndex = 7;
+            this.richTextBox3.Text = "";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(333, 110);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(162, 78);
+            this.label10.TabIndex = 8;
+            this.label10.Text = "Exemplo da Classe CircularBuffer\r\nBuffer Capacity: -\r\nBuffer Count: -\r\nBuffer Arr" +
+    "ay: -\r\nBuffer Head: -\r\nBuffer Tail: -";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(372, 26);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(170, 39);
+            this.label11.TabIndex = 7;
+            this.label11.Text = "Exemplo da Classe ThreadHandler\r\nA Thread conta ate 100 \r\nEm intervalos de 500ms";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(431, 33);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(244, 52);
+            this.label12.TabIndex = 22;
+            this.label12.Text = "Exemplo da Calsse ArduinoHandler\r\n\r\nLê valores da Porta Serial em formatos de pac" +
+    "otes\r\nO sketch para arduino é o SignalGenerator\r\n";
             // 
             // Form1
             // 
@@ -534,33 +669,35 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(683, 361);
             this.Controls.Add(this.tabControl1);
-            this.Controls.Add(this.statusStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.menuStrip2.ResumeLayout(false);
             this.menuStrip2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Button btnEnqueue;
@@ -603,7 +740,19 @@
         private System.Windows.Forms.ToolStripMenuItem updateChartToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startUpdaterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopUpdaterToolStripMenuItem;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.StatusStrip statusStrip2;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.RichTextBox richTextBox3;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label10;
     }
 }
 
