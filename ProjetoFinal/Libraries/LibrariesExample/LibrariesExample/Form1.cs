@@ -25,7 +25,9 @@ namespace LibrariesExample
         ThreadHandler aduinodataconsumer;
         Timer arduinoBufferLabel;
         #endregion
-
+        #region ChartOptimized
+        ChartHandler mychart;
+        #endregion
         public Form1()
         {
             InitializeComponent();
@@ -48,6 +50,9 @@ namespace LibrariesExample
             arduinoBufferLabel = new Timer();
             arduinoBufferLabel.Interval = 50;
             arduinoBufferLabel.Tick += updateLabelBuffer;
+            #endregion
+            #region ChartHandler
+            mychart = new ChartHandler(ref chart1);
             #endregion
         }
 
@@ -187,6 +192,36 @@ namespace LibrariesExample
             myarduinohandler.StopAquisition();
             arduinoBufferLabel.Stop();
             #endregion
+        }
+
+        #region ChartOptimized
+
+        #endregion
+
+        private void addPointToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mychart.series.Points.AddY(Math.Sin(DateTime.Now.Second+DateTime.Now.Millisecond/1000.0));
+            toolStripStatusLabel1.Text = mychart.chart.ChartAreas[0].AxisX.ValueToPixelPosition(0).ToString();
+        }
+
+        private void addToBufferToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mychart.AddYToBuffer(Math.Sin(DateTime.Now.Second + DateTime.Now.Millisecond / 1000.0));
+        }
+
+        private void updateChartToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mychart.UpdateYChartPoints();
+        }
+
+        private void startUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mychart.PlotterUpdater.Start();
+        }
+
+        private void stopUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mychart.PlotterUpdater.Stop();
         }
     }
 }
