@@ -340,7 +340,7 @@ class SignalGenerator {
           _actual_value = 1;
           break;
         case ECG_WAVE:
-          _actual_value = ecg_wave[_actual_index];
+          _actual_value = ecg_wave[_actual_index*5];
           break;
         case EMG_WAVE:
           _actual_value = emg_wave[_actual_index]; //Work around
@@ -350,7 +350,7 @@ class SignalGenerator {
           break;
       }
       _actual_value = _actual_value * _amplitude + _offset;
-      ++_actual_index %= 100; //Incremento circular
+      ++_actual_index %= 500; //Incremento circular
       return _actual_value;
     }
 
@@ -386,11 +386,11 @@ class SignalGenerator {
       get_next();
       //analogWrite(DAC0,(uint16_t) _actual_value);
       //analogWrite(DAC1,(uint16_t) _actual_value);
-      //Serial.println(String((uint16_t) _actual_value));
-      Serial.write('j');
+//      Serial.println(String((uint16_t) _actual_value));
+      Serial.write('$');
       Serial.write((uint8_t) ((uint16_t) _actual_value >> 8));
       Serial.write((uint8_t) ((uint16_t) _actual_value));
-      //Serial.write('\n');
+      Serial.write('\n');
     
     }
 
@@ -464,17 +464,17 @@ void setup() {
   Serial.println("Signal Generator Started!");
   my_generator.setOffset(512);
   my_generator.setAmplitude(512);
-  my_generator.setWaveform(SIN_WAVE);
+  my_generator.setWaveform(TRIANGLE_WAVE);
   //  my_generator.setFreq(1); //1Hz
   //  my_generator.start();
   delay(100);
-  Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();//100Hz
+  Timer3.attachInterrupt(timerDataAcq).setFrequency(3).start();
 }
 void loop() {
   if (Serial.available()) {
     switch (Serial.read()) {
       case 's':
-        Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();//100Hz
+        Timer3.attachInterrupt(timerDataAcq).setFrequency(3).start();
         break;
       case 'p':
         Timer3.stop();
