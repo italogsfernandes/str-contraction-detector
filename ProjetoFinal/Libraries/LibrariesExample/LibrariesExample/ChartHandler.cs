@@ -64,12 +64,9 @@ namespace LibrariesExample
         {
             chartArea.Name = chartAreaName;
             chartArea.AxisX.Minimum = 0;
-            chartArea.AxisX.Maximum = qnt_pontos;
-            //chartArea.AxisX.Minimum = 0;
-            //chartArea.AxisY.Maximum = qnt_pontos;
-            chartArea.AxisX.LabelStyle.Format = "{0:0.0}";
+            chartArea.AxisX.LabelStyle.Format = "{0.00}";
             chartArea.AxisX.LabelStyle.Font = new Font("Arial", 8.0F, FontStyle.Bold);
-            chartArea.AxisY.LabelStyle.Format = "{0:0.0}";
+            chartArea.AxisY.LabelStyle.Format = "{0.00}";
             chartArea.AxisY.LabelStyle.Font = new Font("Arial", 8.0F, FontStyle.Bold);
             chartArea.BackColor = Color.White; //Cor de fundo da chartArea
             //Vinculando ao chart
@@ -130,6 +127,8 @@ namespace LibrariesExample
 
                 //Joga todo o conjunto de pontos no chart
                 series.Points.DataBindY(y_values);
+                chartArea.AxisX.Minimum = 0;
+                chartArea.AxisX.Maximum = qnt_pontos;
             }
         }
 

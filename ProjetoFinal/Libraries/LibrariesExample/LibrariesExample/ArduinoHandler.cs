@@ -8,26 +8,54 @@ using System.IO.Ports;
 using System.Management;
 using System.Windows.Forms;
 
-/* ESTOU PROGRAMANDO ESSA AINDA, AGUARDE...
- */
 namespace LibrariesExample
 {
+    //
+    // Summary:
+    //     Represents the constants used in the Arduino Communication.
     public static class ArduinoConstants
     {
+        //
+        // Summary:
+        //     Represents the fized size of a data packet.
         public readonly static int PACKETSIZE = 4;
+        //
+        // Summary:
+        //     Represents the start flag used to delimiter a packet.
         public readonly static int PACKETSTART = '$';
+        //
+        // Summary:
+        //     Represents the end flag used to delimiter a packet.
         public readonly static int PACKETEND = '\n';
-        
-
-
+        //
+        // Summary:
+        //     Represents the string to be searched as the description of the serial port.
+        public readonly static string ARDUINODESCRIPTION = "Arduino";
     }
 
+    //
+    // Summary:
+    //     Handles the communication with the arduino microcontroller. Its mainly function is data aquisition.
     public class ArduinoHandler
     {
+        //
+        // Summary:
+        //     Represents a serial port resource.To browse the .NET Framework source code for
+        //     this type, see the Reference Source.
         public SerialPort serialPort;
+        //
+        // Summary:
+        //     Higher methods to controls a aquisition thread.
         public ThreadHandler threadAquisition;
+        //
+        // Summary:
+        //     Represents a first-in, first-out collection of objects organized in a circular way
+        //     storing the data read by the aquisition thread.
         public CircularBuffer<UInt16> bufferAquisition;
 
+        //
+        // Summary:
+        //     To com preguiça de ficar documentando, depois e termino....
         public string PortDescription;
 
         public bool dataWaiting {
@@ -148,7 +176,7 @@ namespace LibrariesExample
                 //possui o friendly name do Arduino? 
                 #region Encontrando  "Arduino"
                 // Due (Programming Port)"
-                if (s.Contains("Arduino"))
+                if (s.Contains(ArduinoConstants.ARDUINODESCRIPTION))
                 {
                     //Retornar o nome do port "COMx ou COMxx" AO FINAL do string.
                     //localizar a última sequencia "(COM"

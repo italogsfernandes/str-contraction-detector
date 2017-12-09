@@ -201,7 +201,6 @@ namespace LibrariesExample
         private void addPointToolStripMenuItem_Click(object sender, EventArgs e)
         {
             mychart.series.Points.AddY(Math.Sin(DateTime.Now.Second+DateTime.Now.Millisecond/1000.0));
-            toolStripStatusLabel1.Text = mychart.chart.ChartAreas[0].AxisX.ValueToPixelPosition(0).ToString();
         }
 
         private void addToBufferToolStripMenuItem_Click(object sender, EventArgs e)
