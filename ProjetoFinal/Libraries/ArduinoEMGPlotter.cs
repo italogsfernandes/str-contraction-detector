@@ -7,30 +7,47 @@ using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 namespace DetectorContracao
 {
-    public class ArduinoPlotter
+    public class ArduinoEMGPlotter
     {
         public ArduinoHandler arduinoHandler;
         public ThreadHandler dataconsumer;
         public Timer bufferLabelUpdater;
-        public ChartHandler chartHandler;
+        public EMGChart chartHandler;
         public Label lblBufferStatus;
-
-        public ArduinoPlotter()
+        public CircularBuffer<double> BufferMediaMovel;
+        
+        public ArduinoEMGPlotter()
         {
         }
 
-        public ArduinoPlotter(ref Chart chart, ref Label _lblBufferStatus)
+        public ArduinoEMGPlotter(ref Chart chart, ref Label _lblBufferStatus)
         {
-            chartHandler = new ChartHandler(ref chart,5000);
-
+            chartHandler = new EMGChart(ref chart, 5000);
+            BufferMediaMovel = new CircularBuffer<double>(100);
+            for (int i = 0; i < BufferMediaMovel.Capacity; i++)
+            {
+                BufferMediaMovel.SecureEnqueue(0);
+            }
             chartHandler.ConfigureChart("Leituras", "Arduino Plotter", "Pontos", "Valores");
-            
-          
+
+
             arduinoHandler = new ArduinoHandler();
 
             dataconsumer = new ThreadHandler(() => {
-                if (arduinoHandler.dataWaiting) {
-                    chartHandler.AddYToBuffer(arduinoHandler.bufferAquisition.SecureDequeue()*5/1024.0);
+                if (arduinoHandler.dataWaiting)
+                {
+                    double valormedia;
+                    double valor2add = arduinoHandler.bufferAquisition.
+                        SecureDequeue() * 5 / 1024.0 - 2.5;
+                    chartHandler.AddYToBuffer(valor2add);
+
+                    if (BufferMediaMovel.Full)
+                    {
+                        BufferMediaMovel.SecureDequeue();
+                        valormedia = BufferMediaMovel.ToArray().Average();
+                        BufferMediaMovel.SecureEnqueue(Math.Abs(valor2add)*3.23);
+                        chartHandler.AddEnvoloriaToBuffer(valormedia);
+                    }
                 }
             });
 

@@ -34,6 +34,16 @@ namespace DetectorContracao
 
         //
         // Summary:
+        //     Xablaus in the CircularBuffer`1.
+        //
+        // Returns:
+        //     Xablaus in the CircularBuffer`1.
+        public bool Full {
+            get { return _length == _capacidade; }
+        }
+
+        //
+        // Summary:
         //     Gets the maximum number of elements that can be contained in the CircularBuffer`1.
         //
         // Returns:

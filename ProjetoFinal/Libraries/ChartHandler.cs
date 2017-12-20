@@ -20,11 +20,16 @@ namespace DetectorContracao
         public CircularBuffer<double> PlotterBuffer;
 
         public int qnt_pontos;
+
         public double[] y_values;
         public double[] x_values;
 
         public double freq_aquire;
 
+        public ChartHandler()
+        {
+
+        }
         public ChartHandler(ref Chart _chart, int _qnt_points = 20,
             double facq = 1000)
         {
@@ -45,10 +50,9 @@ namespace DetectorContracao
             //series.Points.DataBindY(y_values);
             //chartArea.AxisX.Minimum = 0;
             //chartArea.AxisX.Maximum = qnt_pontos;
-
         }
 
-        public void SetQntPoints(int qnt = 15)
+        public virtual void SetQntPoints(int qnt = 15)
         {
             qnt_pontos = qnt;
             y_values = new double[qnt_pontos];
@@ -102,7 +106,7 @@ namespace DetectorContracao
             chart.Titles.Add(titleChart);
         }
 
-        public void ConfigureSeries(string xtitle = "Tempo (s)", string ytitle = "Tensão (V)")
+        public virtual void ConfigureSeries(string xtitle = "Tempo (s)", string ytitle = "Tensão (V)")
         {
             series.ChartType = SeriesChartType.FastLine; //tipo de gráfico do path
             series.Color = Color.Blue;
@@ -113,7 +117,7 @@ namespace DetectorContracao
         }
         #endregion
 
-        public void AddYToBuffer(double Y)
+        public virtual void AddYToBuffer(double Y)
         {
             if (!PlotterBuffer.SecureEnqueue(Y))
             {
@@ -123,7 +127,7 @@ namespace DetectorContracao
             }
         }
 
-        public void UpdateYChartPoints()
+        public virtual void UpdateYChartPoints()
         {
             int points_to_add = PlotterBuffer.Count;
 
@@ -150,7 +154,7 @@ namespace DetectorContracao
             }
         }
 
-        public void UpdateXYChartPoints()
+        public virtual void UpdateXYChartPoints()
         {
             int points_to_add = PlotterBuffer.Count;
 
@@ -184,7 +188,7 @@ namespace DetectorContracao
             }
         }
 
-        private void PlotterUpdater_Tick(object sender, EventArgs e)
+        public void PlotterUpdater_Tick(object sender, EventArgs e)
         {
             UpdateXYChartPoints();
         }
