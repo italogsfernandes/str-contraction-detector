@@ -8,7 +8,7 @@ using System.IO.Ports;
 using System.Management;
 using System.Windows.Forms;
 
-namespace LibrariesExample
+namespace DetectorContracao
 {
     //
     // Summary:
@@ -61,6 +61,8 @@ namespace LibrariesExample
         public bool dataWaiting {
             get { return bufferAquisition.Count > 0; }
         }
+
+        public bool is_running;
 
         private string _port_name;
 
@@ -121,11 +123,13 @@ namespace LibrariesExample
             serialPort.PortName = _port_name;
             this.Open();
             threadAquisition.Start();
+            is_running = true;
         }
 
         public void StopAquisition()
         {
             threadAquisition.Stop();
+            is_running = false;
         }
 
         private string GetArduinoSerialPort()

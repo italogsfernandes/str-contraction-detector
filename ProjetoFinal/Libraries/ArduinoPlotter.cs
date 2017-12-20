@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-namespace LibrariesExample
+namespace DetectorContracao
 {
     public class ArduinoPlotter
     {
@@ -17,7 +17,7 @@ namespace LibrariesExample
 
         public ArduinoPlotter(ref Chart chart, ref Label _lblBufferStatus)
         {
-            chartHandler = new ChartHandler(ref chart,1000);
+            chartHandler = new ChartHandler(ref chart,5000);
 
             chartHandler.ConfigureChart("Leituras", "Arduino Plotter", "Pontos", "Valores");
             
@@ -42,13 +42,13 @@ namespace LibrariesExample
             try
             {
                 lblBufferStatus.Text =
-                    "Connected to:\n" + arduinoHandler.PortDescription +
-                    "\nBuffers: " +
-                    "\nSerial Port: " +
+                    "Connected to: " + arduinoHandler.PortDescription +
+                    "\t Buffers: " +
+                    "\t Serial Port: " +
                     arduinoHandler.serialPort.BytesToRead.ToString("D4") + "/" + arduinoHandler.serialPort.ReadBufferSize.ToString() +
-                    "\nAquisition: " +
+                    "\t Aquisition: " +
                     arduinoHandler.bufferAquisition.Count.ToString("D4") + "/" + arduinoHandler.bufferAquisition.Capacity.ToString() +
-                    "\nPlotter: " +
+                    "\t Plotter: " +
                     chartHandler.PlotterBuffer.Count.ToString("D4") + "/" + chartHandler.PlotterBuffer.Capacity.ToString();
             }
             catch (Exception)

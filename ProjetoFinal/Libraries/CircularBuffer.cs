@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 
-namespace LibrariesExample
+namespace DetectorContracao
 {
     //
     // Summary:

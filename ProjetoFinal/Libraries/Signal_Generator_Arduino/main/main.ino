@@ -350,7 +350,7 @@ class SignalGenerator {
           break;
       }
       _actual_value = _actual_value * _amplitude + _offset;
-      ++_actual_index %= 500; //Incremento circular
+      ++_actual_index %= 2200; //Incremento circular
       return _actual_value;
     }
 
@@ -464,17 +464,17 @@ void setup() {
   Serial.println("Signal Generator Started!");
   my_generator.setOffset(512);
   my_generator.setAmplitude(512);
-  my_generator.setWaveform(TRIANGLE_WAVE);
+  my_generator.setWaveform(EMG_WAVE);
   //  my_generator.setFreq(1); //1Hz
   //  my_generator.start();
   delay(100);
-  Timer3.attachInterrupt(timerDataAcq).setFrequency(3).start();
+  Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();
 }
 void loop() {
   if (Serial.available()) {
     switch (Serial.read()) {
       case 's':
-        Timer3.attachInterrupt(timerDataAcq).setFrequency(3).start();
+        Timer3.attachInterrupt(timerDataAcq).setFrequency(1000).start();
         break;
       case 'p':
         Timer3.stop();

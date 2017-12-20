@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace LibrariesExample
+namespace DetectorContracao
 {
     public class ChartHandler
     {
@@ -21,9 +21,14 @@ namespace LibrariesExample
 
         public int qnt_pontos;
         public double[] y_values;
+        public double[] x_values;
 
-        public ChartHandler(ref Chart _chart, int _qnt_points = 20)
+        public double freq_aquire;
+
+        public ChartHandler(ref Chart _chart, int _qnt_points = 20,
+            double facq = 1000)
         {
+            freq_aquire = facq;
             chart = _chart;
             chartArea = new ChartArea();
             titleChart = new Title();
@@ -34,12 +39,12 @@ namespace LibrariesExample
             this.ConfigureChart();
 
             PlotterUpdater = new Timer();
-            PlotterUpdater.Interval = 100;
+            PlotterUpdater.Interval = 30;
             PlotterUpdater.Tick += PlotterUpdater_Tick;
 
-            series.Points.DataBindY(y_values);
-            chartArea.AxisX.Minimum = 0;
-            chartArea.AxisX.Maximum = qnt_pontos;
+            //series.Points.DataBindY(y_values);
+            //chartArea.AxisX.Minimum = 0;
+            //chartArea.AxisX.Maximum = qnt_pontos;
 
         }
 
@@ -47,7 +52,12 @@ namespace LibrariesExample
         {
             qnt_pontos = qnt;
             y_values = new double[qnt_pontos];
+            x_values = new double[qnt_pontos];
             PlotterBuffer = new CircularBuffer<double>(qnt_pontos);
+            for(int i = 0; i < qnt_pontos; i++)
+            {
+                x_values[i] = i * (1 / freq_aquire);
+            }
         }
 
         #region Ajustando o Chart
@@ -70,7 +80,7 @@ namespace LibrariesExample
         public void ConfigureChartArea(string chartAreaName = "ChartArea1")
         {
             chartArea.Name = chartAreaName;
-            chartArea.AxisX.LabelStyle.Format = "{0}";
+            chartArea.AxisX.LabelStyle.Format = "{0.00}";
             chartArea.AxisX.LabelStyle.Font = new Font("Arial", 8.0F, FontStyle.Bold);
             chartArea.AxisY.LabelStyle.Format = "{0.00}";
             chartArea.AxisY.LabelStyle.Font = new Font("Arial", 8.0F, FontStyle.Bold);
@@ -135,12 +145,48 @@ namespace LibrariesExample
                 series.Points.DataBindY(y_values);
                 chartArea.AxisX.Minimum = 0;
                 chartArea.AxisX.Maximum = qnt_pontos;
+                chartArea.AxisY.Minimum = 0;
+                chartArea.AxisY.Maximum = 5;
+            }
+        }
+
+        public void UpdateXYChartPoints()
+        {
+            int points_to_add = PlotterBuffer.Count;
+
+            if (points_to_add > 0) //Se existem pontos a sem adicionados no chart
+            {
+                //Desloca os Pontos atuais para a esquerda
+                for (int i = 0; i < (qnt_pontos - points_to_add); i++)
+                {
+                    y_values[i] = y_values[i + points_to_add];
+                    x_values[i] = x_values[i + points_to_add];
+                }
+
+                //Adiciona os novos pontos no novo espaço a direita
+                for (int i = (qnt_pontos - points_to_add); i < qnt_pontos; i++)
+                {
+                    y_values[i] = PlotterBuffer.SecureDequeue();
+                    x_values[i] = x_values[i-1] + (1 / freq_aquire);
+                }
+
+                //Joga todo o conjunto de pontos no chart
+                series.Points.DataBindXY(x_values,y_values);
+                
+                chartArea.AxisX.Minimum = Convert.ToDouble(Math.Floor(
+                    x_values[0] * (1000.0 / PlotterUpdater.Interval))
+                    / (1000.0 / PlotterUpdater.Interval));
+                chartArea.AxisX.Maximum = Convert.ToDouble(Math.Ceiling(
+                    x_values[qnt_pontos - 1] * (1000.0 / PlotterUpdater.Interval))
+                    / (1000.0 / PlotterUpdater.Interval)); 
+                chartArea.AxisY.Minimum = 0;
+                chartArea.AxisY.Maximum = 5;
             }
         }
 
         private void PlotterUpdater_Tick(object sender, EventArgs e)
         {
-            UpdateYChartPoints();
+            UpdateXYChartPoints();
         }
 
     }

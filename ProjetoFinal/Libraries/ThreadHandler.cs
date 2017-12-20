@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace LibrariesExample
+namespace DetectorContracao
 {
     //
     // Summary:
