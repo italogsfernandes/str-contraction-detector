@@ -22,6 +22,7 @@ namespace DetectorContracao
         private bool _is_full; //Flag saying if is it empty
         private Mutex _security_control;
 
+
         //
         // Summary:
         //     Gets the number of elements contained in the CircularBuffer`1.

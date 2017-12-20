@@ -25,13 +25,20 @@ namespace DetectorContracao
         public double[] x_values;
 
         public double freq_aquire;
+        public double period_aquire {
+            get { return 1 / freq_aquire; }
+            set { freq_aquire = 1 / value; }
+        }
+
+        public double y_max_value;
+        public double y_min_value;
 
         public ChartHandler()
         {
 
         }
         public ChartHandler(ref Chart _chart, int _qnt_points = 20,
-            double facq = 1000)
+            double facq = 1000, double _ymin = -2.5, double _ymax = 5)
         {
             freq_aquire = facq;
             chart = _chart;
@@ -40,6 +47,8 @@ namespace DetectorContracao
             series = new Series();
 
             this.SetQntPoints(_qnt_points);
+            y_min_value = _ymin;
+            y_max_value = _ymax;
 
             this.ConfigureChart();
 
@@ -73,7 +82,9 @@ namespace DetectorContracao
             chart.ChartAreas.Clear();
         }
 
-        public void ConfigureChart(string chartAreaName = "ChartArea1", string chartTitle = "Gráfico", string xtitle = "Tempo (s)", string ytitle = "Tensão (V)")
+        public void ConfigureChart(
+            string chartAreaName = "ChartArea1", string chartTitle = "Gráfico",
+            string xtitle = "Tempo (s)", string ytitle = "Tensão (V)")
         {
             ClearChartElements();
             ConfigureChartArea(chartAreaName);
@@ -149,8 +160,8 @@ namespace DetectorContracao
                 series.Points.DataBindY(y_values);
                 chartArea.AxisX.Minimum = 0;
                 chartArea.AxisX.Maximum = qnt_pontos;
-                chartArea.AxisY.Minimum = 0;
-                chartArea.AxisY.Maximum = 5;
+                chartArea.AxisY.Minimum = y_min_value;
+                chartArea.AxisY.Maximum = y_max_value;
             }
         }
 
@@ -171,20 +182,23 @@ namespace DetectorContracao
                 for (int i = (qnt_pontos - points_to_add); i < qnt_pontos; i++)
                 {
                     y_values[i] = PlotterBuffer.SecureDequeue();
-                    x_values[i] = x_values[i-1] + (1 / freq_aquire);
+                    x_values[i] = x_values[i-1] + period_aquire;
                 }
 
                 //Joga todo o conjunto de pontos no chart
                 series.Points.DataBindXY(x_values,y_values);
                 
                 chartArea.AxisX.Minimum = Convert.ToDouble(Math.Floor(
-                    x_values[0] * (1000.0 / PlotterUpdater.Interval))
-                    / (1000.0 / PlotterUpdater.Interval));
+                    x_values[0] * (freq_aquire / PlotterUpdater.Interval))
+                    / (freq_aquire / PlotterUpdater.Interval));
                 chartArea.AxisX.Maximum = Convert.ToDouble(Math.Ceiling(
-                    x_values[qnt_pontos - 1] * (1000.0 / PlotterUpdater.Interval))
-                    / (1000.0 / PlotterUpdater.Interval)); 
-                chartArea.AxisY.Minimum = 0;
-                chartArea.AxisY.Maximum = 5;
+                    x_values[qnt_pontos - 1] * (freq_aquire / PlotterUpdater.Interval))
+                    / (freq_aquire / PlotterUpdater.Interval)); 
+                chartArea.AxisY.Minimum = -2.5;
+                chartArea.AxisY.Maximum = 2.5;
+                chartArea.AxisY.Minimum = y_min_value;
+                chartArea.AxisY.Maximum = y_max_value;
+
             }
         }
 
