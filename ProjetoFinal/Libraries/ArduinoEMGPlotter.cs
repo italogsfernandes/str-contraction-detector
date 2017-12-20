@@ -28,7 +28,7 @@ namespace DetectorContracao
             {
                 BufferMediaMovel.SecureEnqueue(0);
             }
-            chartHandler.ConfigureChart("Leituras", "Arduino Plotter", "Pontos", "Valores");
+            chartHandler.ConfigureChart("Leituras", "EMG Plotter");
 
 
             arduinoHandler = new ArduinoHandler();

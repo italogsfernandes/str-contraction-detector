@@ -16,15 +16,32 @@ namespace DetectorContracao
         public double[] envoltoria_values;
 
         public Series LimiarSeries;
-        public double limiar;
-
+        public double limiar {
+            get { return limiar_values[0];  }
+            set {
+                for (int i = 0; i < qnt_pontos; i++)
+                {
+                    limiar_values[i] = value;
+                };
+            }
+        }
+        public double[] limiar_values;
         public CircularBuffer<double> EnvoltoriaBuffer;
+
+        public Series DetectionSeries;
+        //Some testes:
+        double[] detection_values;
+        double[] x_contraction;
+        double time_start_contract;
+        double time_end_contract;
+
 
         public EMGChart(ref Chart _chart, int _qnt_points = 20,
             double facq = 1000)
         {
             Envoltoriaseries = new Series();
             LimiarSeries = new Series();
+            DetectionSeries = new Series();
 
             this.freq_aquire = facq;
             this.chart = _chart;
@@ -50,10 +67,15 @@ namespace DetectorContracao
            
             y_values = new double[qnt_pontos];
             x_values = new double[qnt_pontos];
+            limiar_values = new double[qnt_pontos];
+            //detection_values = new double[qnt_pontos];
+
             PlotterBuffer = new CircularBuffer<double>(qnt_pontos);
             for (int i = 0; i < qnt_pontos; i++)
             {
                 x_values[i] = i * (1 / freq_aquire);
+                limiar_values[i] = limiar;
+                //detection_values[i] = -2.5;
             }
         }
 
@@ -70,7 +92,17 @@ namespace DetectorContracao
             Envoltoriaseries.ChartType = SeriesChartType.FastLine;
             Envoltoriaseries.Color = Color.Green;
             Envoltoriaseries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
-            this.chart.Series.Add(Envoltoriaseries); //vincular a serie path ao chart       
+            this.chart.Series.Add(Envoltoriaseries); //vincular a serie path ao chart    
+
+            LimiarSeries.ChartType = SeriesChartType.FastLine;
+            LimiarSeries.Color = Color.Orange;
+            LimiarSeries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
+            this.chart.Series.Add(LimiarSeries); //vincular a serie path ao chart  
+
+            DetectionSeries.ChartType = SeriesChartType.Area;
+            DetectionSeries.Color = Color.FromArgb(50, Color.Cyan);//Cor Transparente
+            DetectionSeries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
+            this.chart.Series.Add(DetectionSeries); //vincular a serie path ao chart  
         }
 
         public void AddEnvoloriaToBuffer(double Y)
@@ -85,6 +117,7 @@ namespace DetectorContracao
 
         public override void UpdateXYChartPoints()
         {
+            #region EMG
             int points_to_add = PlotterBuffer.Count;
 
             if (points_to_add > 0) //Se existem pontos a sem adicionados no chart
@@ -115,7 +148,9 @@ namespace DetectorContracao
                 chartArea.AxisY.Minimum = -2.5 ;
                 chartArea.AxisY.Maximum = 2.5;
             }
+            #endregion
 
+            #region Envoltoria, Limiar e Contracao
             points_to_add = EnvoltoriaBuffer.Count;
 
             if (points_to_add > 0) //Se existem pontos a sem adicionados no chart
@@ -134,7 +169,45 @@ namespace DetectorContracao
 
                 //Joga todo o conjunto de pontos no chart
                 Envoltoriaseries.Points.DataBindXY(this.x_values,envoltoria_values);
+                LimiarSeries.Points.DataBindXY(this.x_values, limiar_values);
+                x_contraction = new double[1000];
+                detection_values = new double[x_contraction.Length];
+                for (int j = 0; j < x_contraction.Length; j++)
+                {
+                    detection_values[j] = 2.5;
+                }
+                DetectionSeries.Points.
+                            DataBindXY(x_contraction, detection_values);
+
+                double time_inicio = x_values[0];
+                double time_end = x_values[0];
+                for (int i = 1; i < qnt_pontos; i++)
+                {
+                    //Subida
+                    if (envoltoria_values[i] > limiar & envoltoria_values[i - 1] < limiar)
+                    {
+                        time_inicio = x_values[i];
+                    }
+                    //Descida
+                    if (envoltoria_values[i] < limiar & envoltoria_values[i - 1] > limiar)
+                    {
+                        time_end = x_values[i];
+                        x_contraction = new double[
+                            Convert.ToInt32(
+                                Math.Ceiling((time_end - time_inicio) * 1000)
+                            )];
+                        detection_values = new double[x_contraction.Length];
+                        for (int j = 0; j < x_contraction.Length; j++)
+                        {
+                            x_contraction[j] = time_inicio + j * 0.001;
+                            detection_values[j] = 2.5;
+                        }
+                        DetectionSeries.Points.
+                            DataBindXY(x_contraction, detection_values);
+                    }
+                }
             }
+            #endregion
         }
 
     }
