@@ -10,269 +10,240 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace DetectorContracao
 {
-    public class EMGChart : ChartHandler
-    {
-        public Series Envoltoriaseries; //série para a envoltoria
-        public double[] envoltoria_values;
-        public double[] hilbert_values;
-        public double[] envoltoria_values_borderless;
-        double[] valorhbt_filtrado;
-        double[] valorhbt_filtrado_borderless;
+    public class EMGChart : ChartHandler {
 
-        public bool bandeiraEMG;
-        public bool bandeiraEnvoltoria;
-        public bool bandeiraLimiar;
-        public bool bandeiraDeteccao;
-        public bool bandeiraHilbert;
+        //Dados:
+        double[] time_values;
+        double[] emg_bruto_values;
+        double[] hilbert_values;
+        double[] hilbert_retificado_values;
+        double[] envoltoria_values;
+        double[] limiar_values;
+        double[] detection_sites_values;
 
-        public Series LimiarSeries; //série para o limiar
-        
         public double limiar {
-            get { return limiar_values[0];  } //retorna o limiar de detecção
+            get { return limiar_values[0]; } //retorna o limiar de detecção
             set {
                 limiar_values = Enumerable.Repeat<double>(value, qnt_pontos).
                     ToArray(); //criar um array com qnt_pontos com valor igual a value
             }
         }
 
-        public double[] limiar_values;
-        public CircularBuffer<double> EnvoltoriaBuffer; //buffer para os pontos da envoltória
+        //Series:
+        public Series EMGBrutoSeries;
+        public Series HilbertSeries;
+        public Series HilbertRetificadoSeries;
+        public Series EnvoltoriaSeries;
+        public Series LimiarSeries;
+        public Series DetectionSitesSeries;
 
-        public Series DetectionSeries; //série de detecção da contração
+        //Indicadores
+        public bool EMGBrutoVisible;
+        public bool HilbertVisible;
+        public bool HilbertRetificadoVisible;
+        public bool EnvoltoriaVisible;
+        public bool LimiarVisible;
+        public bool DetectionSitesVisible;
 
-        double[] detection_values;
-
-        public EMGChart(ref Chart _chart, int _qnt_points = 20,
-            double facq = 1000)
+        public CircularBuffer<double[]> EMGPlotterBuffer; //buffer para os pontos da envoltória
+        
+        public EMGChart(ref Chart _chart, int _qnt_points = 20, double facq = 1000)
         {
-            y_min_value = -2.5; //valor minimo do eixo y
-            y_max_value = 2.5; //valor máximo do eixo y
-            Envoltoriaseries = new Series(); //instancializar a série para envoltória
-            LimiarSeries = new Series();// instancializar a série para o limiar
-            DetectionSeries = new Series(); //inicializar a série para a detecção
-
+            //Base
             this.freq_aquire = facq; //frequência de aquisição
             this.chart = _chart; //chart enviado por referência 
             this.chartArea = new ChartArea(); //instancializar uma chart area
             this.titleChart = new Title(); //instancializar um title
-            this.series = new Series(); //instancializar uma série 
+            this.series = new Series(); //instancializar uma série
 
+            //Series
+            EMGBrutoSeries = new Series();
+            HilbertSeries = new Series();
+            HilbertRetificadoSeries = new Series();
+            EnvoltoriaSeries = new Series();
+            LimiarSeries = new Series();
+            DetectionSitesSeries = new Series();
+
+            y_min_value = -2.5; //valor minimo do eixo y
+            y_max_value = 2.5; //valor máximo do eixo y
+
+            //Vetores
             SetQntPoints(_qnt_points); //criar os vetores e buffer com o número de pontos desejados
 
+            //Adicionar elementos do chart
             ConfigureChart(); //configurar o chart
 
             this.PlotterUpdater = new Timer(); //timer para plotagem
-            this.PlotterUpdater.Interval = 30; //intervalo de tempo para o timer
+            this.PlotterUpdater.Interval = 20; //intervalo de tempo para o timer
             this.PlotterUpdater.Tick += this.PlotterUpdater_Tick;
 
-            bandeiraEMG = true;
-            bandeiraEnvoltoria = true;
-            bandeiraLimiar = true;
-            bandeiraDeteccao = true;
-        }
+            //Flags de visibilidade
+            EMGBrutoVisible= true;
+            HilbertVisible = false;
+            HilbertRetificadoVisible = false;
+            EnvoltoriaVisible = true;
+            LimiarVisible = false;
+            DetectionSitesVisible = false;
+    }
 
-        public override void SetQntPoints(int qnt = 15)  //??
+        public override void SetQntPoints(int qnt)
         {
-            base.SetQntPoints(qnt);
+            qnt_pontos = qnt; //quantidade de pontos
 
-            envoltoria_values = new double[qnt_pontos];
-            valorhbt_filtrado = new double[qnt_pontos];
-            detection_values = new double[qnt_pontos];
+            time_values = new double[qnt_pontos];
+            emg_bruto_values = new double[qnt_pontos];
             hilbert_values = new double[qnt_pontos];
-            envoltoria_values_borderless = new double[qnt_pontos*2];
-            valorhbt_filtrado_borderless = new double[qnt_pontos*2];
-            EnvoltoriaBuffer = new CircularBuffer<double>(qnt_pontos);
+            hilbert_retificado_values = new double[qnt_pontos];
+            envoltoria_values = new double[qnt_pontos];
             limiar_values = new double[qnt_pontos];
+            detection_sites_values = new double[qnt_pontos];
+
+            EMGPlotterBuffer = new CircularBuffer<double[]>(qnt_pontos);
         }
 
         public override void ConfigureSeries(
             string xtitle = "Tempo (s)", string ytitle = "Tensão (V)") //configurar as série 
         {
-            base.ConfigureSeries();
+            #region EMG Bruto
+            EMGBrutoSeries.ChartType = SeriesChartType.FastLine; //tipo de gráfico do path
+            EMGBrutoSeries.Color = Color.Blue;
+            EMGBrutoSeries.ChartArea = chartArea.Name; //vincular a serie path à chartArea
+            chart.Series.Add(EMGBrutoSeries); //vincular a serie path ao chart       
+            #endregion
 
-            Envoltoriaseries.ChartType = SeriesChartType.FastLine;
-            Envoltoriaseries.Color = Color.DarkRed;
-            Envoltoriaseries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
-            this.chart.Series.Add(Envoltoriaseries); //vincular a serie path ao chart    
+            #region Hilbert
+            HilbertSeries.ChartType = SeriesChartType.FastLine; //tipo de gráfico do path
+            HilbertSeries.Color = Color.Green;
+            HilbertSeries.ChartArea = chartArea.Name; //vincular a serie path à chartArea
+            chart.Series.Add(HilbertSeries); //vincular a serie path ao chart  
+            #endregion
 
+            #region HilbertRetificado
+            HilbertRetificadoSeries.ChartType = SeriesChartType.FastLine; //tipo de gráfico do path
+            HilbertRetificadoSeries.Color = Color.DarkBlue;
+            HilbertRetificadoSeries.ChartArea = chartArea.Name; //vincular a serie path à chartArea
+            chart.Series.Add(HilbertRetificadoSeries); //vincular a serie path ao chart  
+            #endregion
+
+            #region Envoltoria
+            EnvoltoriaSeries.ChartType = SeriesChartType.FastLine; //tipo de gráfico do path
+            EnvoltoriaSeries.Color = Color.DarkRed;
+            EnvoltoriaSeries.ChartArea = chartArea.Name; //vincular a serie path à chartArea
+            chart.Series.Add(EnvoltoriaSeries); //vincular a serie path ao chart  
+            #endregion
+
+            #region Limiar
             LimiarSeries.ChartType = SeriesChartType.FastLine;
             LimiarSeries.Color = Color.Orange;
             LimiarSeries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
-            this.chart.Series.Add(LimiarSeries); //vincular a serie path ao chart  
+            chart.Series.Add(LimiarSeries); //vincular a serie path ao chart  
+            #endregion
 
-            DetectionSeries.ChartType = SeriesChartType.Area;
-            DetectionSeries.Color = Color.FromArgb(50, Color.Cyan);//Cor Transparente
-            DetectionSeries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
-            this.chart.Series.Add(DetectionSeries); //vincular a serie path ao chart  
+            #region Areas de Contracao
+            DetectionSitesSeries.ChartType = SeriesChartType.Area;
+            DetectionSitesSeries.Color = Color.FromArgb(50, Color.Cyan);//Cor Transparente
+            DetectionSitesSeries.ChartArea = this.chartArea.Name; //vincular a serie path à chartArea
+            chart.Series.Add(DetectionSitesSeries); //vincular a serie path ao chart  
+            #endregion
+
+            #region Eixos
+            chartArea.AxisX.Title = xtitle;
+            chartArea.AxisY.Title = ytitle;
+#           endregion
         }
 
-        public void AddEnvoloriaToBuffer(double Y) //adicionar valor de envoltória no buffer
+        public void AddPointToBuffer(
+            double time,
+            double EMG_Bruto,
+            double Hilbert,
+            double Envoltoria,
+            bool IsInDetection) //adicionar valor de envoltória no buffer
         {
-            if (!EnvoltoriaBuffer.SecureEnqueue(Y)) //se não foi possível adiconar um novo valor
+            EMGPlotterBuffer.SecureOverflowEnqueue(new double[]
             {
-                //MessageBox.Show("Buffer de Plottagem Cheio");
-                EnvoltoriaBuffer.SecureDequeue(); //retira um valor 
-                EnvoltoriaBuffer.SecureEnqueue(Y);//adiciona o novo valor
+                time, EMG_Bruto, Hilbert, Envoltoria, IsInDetection?y_max_value:y_min_value
+            });
+        }
+
+        public void SetNewPointArrays(
+            double[] time,
+            double[] EMG_Bruto,
+            double[] Hilbert,
+            double[] HilbertRetificado,
+            double[] Envoltoria,
+            bool[] IsInDetection) //adicionar valor de envoltória no buffer
+        {
+            time_values = time;
+            emg_bruto_values = EMG_Bruto;
+            hilbert_values = Hilbert;
+            hilbert_retificado_values = HilbertRetificado;
+            envoltoria_values = Envoltoria;
+            for (int i = 0; i < IsInDetection.Length; i++) {
+                detection_sites_values[i] = IsInDetection[i] ? y_max_value : y_min_value;
             }
         }
+
 
         public override void UpdateXYChartPoints()
         {
-            #region EMG
-            int points_to_add = PlotterBuffer.Count; //número de elementos no buffer
+            int points_to_plot = 1;// EMGPlotterBuffer.Count;
+            if(points_to_plot > 0) {
+                #region Leitura dos novos pontos
+                //// Desloca todos os pontos atuais para a esquerda
+                //for (int i = 0; i < (qnt_pontos - points_to_plot); i++) {
+                //    time_values[i] = time_values[i + points_to_plot];
+                //    emg_bruto_values[i] = emg_bruto_values[i + points_to_plot];
+                //    hilbert_values[i] = hilbert_values[i + points_to_plot];
+                //    hilbert_retificado_values[i] = hilbert_retificado_values[i + points_to_plot];
+                //    envoltoria_values[i] = envoltoria_values[i + points_to_plot];
+                //    detection_sites_values[i] = detection_sites_values[i + points_to_plot];
+                //}
 
-            if (points_to_add > 0) //Se existem pontos a sem adicionados no chart
-            {
-                //Desloca os Pontos atuais para a esquerda - em y e x
-                for (int i = 0; i < (qnt_pontos - points_to_add); i++)
-                {
-                    y_values[i] = y_values[i + points_to_add];
-                    x_values[i] = x_values[i + points_to_add];
+                ////Adiciona os novos pontos no novo espaço a direita
+                //for (int i = (qnt_pontos - points_to_plot); i < qnt_pontos; i++){
+                //    double[] values_in_waiting = EMGPlotterBuffer.SecureDequeue();
+
+                //    time_values[i] = values_in_waiting[0];
+                //    emg_bruto_values[i] = values_in_waiting[1];
+                //    hilbert_values[i] = values_in_waiting[2];
+                //    hilbert_retificado_values[i] = Math.Abs(values_in_waiting[2]);
+                //    envoltoria_values[i] = values_in_waiting[3];
+                //    detection_sites_values[i] = values_in_waiting[4];
+                //}
+                #endregion
+                
+                #region Bindings
+                if (EMGBrutoVisible) {
+                    EMGBrutoSeries.Points.DataBindXY(time_values, emg_bruto_values);
                 }
-
-                //Adiciona os novos pontos no novo espaço a direita - em y e x
-                for (int i = (qnt_pontos - points_to_add); i < qnt_pontos; i++)
-                {
-                    y_values[i] = PlotterBuffer.SecureDequeue();
-                    x_values[i] = x_values[i - 1] + period_aquire;
+                if (HilbertVisible) {
+                    HilbertSeries.Points.DataBindXY(time_values, hilbert_values);
                 }
-
-                //Joga todo o conjunto de pontos no chart
-                if (bandeiraEMG)
-                {
-                    series.Color = Color.Blue;
-                    series.Points.DataBindXY(x_values, y_values);
+                if (HilbertRetificadoVisible) {
+                    HilbertRetificadoSeries.Points.DataBindXY(time_values, hilbert_retificado_values);
                 }
+                if (EnvoltoriaVisible) {
+                    EnvoltoriaSeries.Points.DataBindXY(time_values, envoltoria_values);
+                }
+                if (LimiarVisible) {
+                    LimiarSeries.Points.DataBindXY(time_values, limiar_values);
+                }
+                if (DetectionSitesVisible) {
+                    DetectionSitesSeries.Points.DataBindXY(time_values, detection_sites_values);
+                }
+                #endregion
 
-                //Configurar mínimo e máximo dos eixos
+                #region Configurar mínimo e máximo dos eixos
                 chartArea.AxisX.Minimum = Convert.ToDouble(Math.Floor(
-                    x_values[0] * (freq_aquire / PlotterUpdater.Interval))
+                    time_values[0] * (freq_aquire / PlotterUpdater.Interval))
                     / (freq_aquire / PlotterUpdater.Interval));
                 chartArea.AxisX.Maximum = Convert.ToDouble(Math.Ceiling(
-                    x_values[qnt_pontos - 1] * (freq_aquire / PlotterUpdater.Interval))
+                    time_values[qnt_pontos - 1] * (freq_aquire / PlotterUpdater.Interval))
                     / (freq_aquire / PlotterUpdater.Interval));
-                chartArea.AxisY.Minimum = -2.5;
-                chartArea.AxisY.Maximum = 2.5;
                 chartArea.AxisY.Minimum = y_min_value;
                 chartArea.AxisY.Maximum = y_max_value;
-            }
                 #endregion
-
-            #region Envoltoria, Limiar e Contracao
-            if (points_to_add > 0) //Se existem pontos a sem adicionados no chart
-            {
-                for (int i = 0; i < y_values.Length; i++)
-                {
-                    envoltoria_values[i] = y_values[i];
-                }
-                
-                Accord.Math.HilbertTransform.FHT(envoltoria_values, Accord.Math.FourierTransform.Direction.Forward); //aplicar a transformada de Hilbert
-                for (int i = 0; i < envoltoria_values.Length; i++)
-                {
-                    envoltoria_values[i] = Math.Abs(envoltoria_values[i]);
-                    hilbert_values[i] = envoltoria_values[i];
-                }
-
-                valorhbt_filtrado = Butter.Butterworth(envoltoria_values, this.period_aquire, 7);
-                for (int i = 0; i < valorhbt_filtrado.Length; i++)
-                {
-                    valorhbt_filtrado[i] = valorhbt_filtrado[i] * 3.23;
-                }
-                if (bandeiraHilbert)
-                {
-                    series.Color = Color.Green;
-                    series.Points.DataBindXY(this.x_values, hilbert_values);
-                }
-                if (bandeiraEnvoltoria)
-                {
-           
-                    Envoltoriaseries.Points.DataBindXY(this.x_values, valorhbt_filtrado);
-                }
-
-                #region some bigger stuff
-                ////Borda falsa de inicio
-                //int ii,jj;
-                //ii = envoltoria_values.Length / 2;
-                //jj = 0;
-                //while (ii>0)
-                //{
-                //    envoltoria_values_borderless[jj] = envoltoria_values[ii];
-                //    ii--;
-                //    jj++;
-                //}
-
-                //ii = 0;
-                //jj = envoltoria_values.Length / 2;
-                //while ( ii < envoltoria_values.Length)
-                //{
-                //    envoltoria_values_borderless[jj] = envoltoria_values[ii];
-                //    ii++;
-                //    jj++;
-                //}
-
-                //ii = envoltoria_values.Length - 1;
-                //jj = (int) 1.5* envoltoria_values.Length;
-                //while (jj < envoltoria_values_borderless.Length)
-                //{
-                //    envoltoria_values_borderless[jj] = envoltoria_values[ii];
-                //    ii--;
-                //    jj++;
-                //}
-
-
-                //valorhbt_filtrado_borderless = Butter.Butterworth(envoltoria_values_borderless, this.period_aquire, 7);
-                //valorhbt_filtrado = new double[qnt_pontos];
-
-                //for (int i = 0; i < valorhbt_filtrado.Length; i++)
-                //{
-                //    valorhbt_filtrado[i] = valorhbt_filtrado_borderless[i + valorhbt_filtrado.Length / 2];
-                //}
-                ////for (int i = 0; i < valorhbt_filtrado.Length; i++)
-                ////{
-                ////    valorhbt_filtrado[i] *= 3.73;
-                ////}
-                ////Joga todo o conjunto de pontos no chart
-                //Envoltoriaseries.Points.DataBindXY(this.x_values, valorhbt_filtrado);
-
-                if(bandeiraLimiar)
-                     LimiarSeries.Points.DataBindXY(this.x_values, limiar_values);
-
-                #region some stuff
-                double time_inicio = x_values[qnt_pontos-1];
-                double time_end = x_values[0];
-                //x_contractions = new double[];
-                //detections_values = new double[];
-                for (int i = 1; i < qnt_pontos; i++)
-                {
-                    //Subida
-                    if (envoltoria_values[i] > limiar & envoltoria_values[i - 1] < limiar)
-                    {
-                        time_inicio = x_values[i];
-                        time_end = x_values[qnt_pontos - 1];
-                    }
-                    //Descida
-                    if (envoltoria_values[i] < limiar & envoltoria_values[i - 1] > limiar)
-                    {
-                        time_end = x_values[i];
-                    }
-
-                    if (x_values[i] > time_inicio)
-                    {
-                        detection_values[i] = 2.5;
-                    }
-
-                    if(x_values[i] > time_end)
-                    {
-                        detection_values[i] = -3;
-                    }
-                }
-                if(bandeiraDeteccao)
-                    DetectionSeries.Points.DataBindXY(x_values, detection_values);
-                #endregion
-                #endregion
-            }
-            #endregion
-        }
-
+            } 
+        }  
     }
 }

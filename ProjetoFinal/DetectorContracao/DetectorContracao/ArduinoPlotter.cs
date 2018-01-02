@@ -52,9 +52,8 @@ namespace DetectorContracao
                     "\t Serial Port: " +
                     arduinoHandler.serialPort.BytesToRead.ToString("D4") + "/" + arduinoHandler.serialPort.ReadBufferSize.ToString() +
                     "\t Aquisition: " +
-                    arduinoHandler.bufferAquisition.Count.ToString("D4") + "/" + arduinoHandler.bufferAquisition.Capacity.ToString() +
-                    "\t Plotter: " +
-                    chartHandler.PlotterBuffer.Count.ToString("D4") + "/" + chartHandler.PlotterBuffer.Capacity.ToString();
+                    arduinoHandler.bufferAquisition.Count.ToString("D4") + "/" + arduinoHandler.bufferAquisition.Capacity.ToString();// +
+                    //"\t Plotter: " + chartHandler.PlotterBuffer.Count.ToString("D4") + "/" + chartHandler.PlotterBuffer.Capacity.ToString();
             }
             catch (Exception)
             {
@@ -72,10 +71,10 @@ namespace DetectorContracao
 
         public virtual void Start() //iniciar a execução
         {
+            bufferLabelUpdater.Start(); //iniciar atualizaçãod da label
             chartHandler.PlotterUpdater.Start(); //iniciar a atualização do chart
             dataconsumer.Start(); //iniciar a thread consumidora
             arduinoHandler.StartAquisition(); //começar a aquisição de dados
-            bufferLabelUpdater.Start(); //iniciar atualizaçãod da label
         }
 
     }

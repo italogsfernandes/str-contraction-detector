@@ -185,6 +185,14 @@ namespace DetectorContracao
             return res;
         }
 
+        public void SecureOverflowEnqueue(T item) //adicionar no buffer usando mutex
+        {
+            _security_control.WaitOne();
+           this.OverflowEnqueue(item);
+            _security_control.ReleaseMutex();
+        }
+
+        
         //
         // Summary:
         //     Removes and returns the object at the beginning of the CircularBuffer`1 using a Mutex.

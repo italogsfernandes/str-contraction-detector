@@ -81,22 +81,22 @@ namespace DetectorContracao
 
         private void bunifuSwitch1_Click(object sender, EventArgs e)
         {
-            emg_dacq.emgChart.bandeiraEMG = !emg_dacq.emgChart.bandeiraEMG;
+            emg_dacq.emgChart.EMGBrutoVisible = !emg_dacq.emgChart.EMGBrutoVisible;
         }
 
         private void bunifuSwitch2_Click(object sender, EventArgs e)
         {
-            emg_dacq.emgChart.bandeiraEnvoltoria = !emg_dacq.emgChart.bandeiraEnvoltoria;
+            emg_dacq.emgChart.EnvoltoriaVisible = !emg_dacq.emgChart.EnvoltoriaVisible;
         }
 
         private void bunifuSwitch3_Click(object sender, EventArgs e)
         {
-            emg_dacq.emgChart.bandeiraLimiar = !emg_dacq.emgChart.bandeiraLimiar;
+            emg_dacq.emgChart.LimiarVisible = !emg_dacq.emgChart.LimiarVisible;
         }
 
         private void bunifuSwitch4_Click(object sender, EventArgs e)
         {
-            emg_dacq.emgChart.bandeiraDeteccao = !emg_dacq.emgChart.bandeiraDeteccao;
+            emg_dacq.emgChart.DetectionSitesVisible = !emg_dacq.emgChart.DetectionSitesVisible;
         }
 
         private void panel8_Resize(object sender, EventArgs e)
@@ -106,7 +106,7 @@ namespace DetectorContracao
 
         private void bunifuSwitch5_Click(object sender, EventArgs e)
         {
-            emg_dacq.emgChart.bandeiraHilbert = !emg_dacq.emgChart.bandeiraHilbert;
+            emg_dacq.emgChart.HilbertVisible = !emg_dacq.emgChart.HilbertVisible;
         }
     }
 }
