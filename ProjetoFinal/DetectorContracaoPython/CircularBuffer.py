@@ -5,6 +5,12 @@ class CircularBuffer():
         if capacity < 0:
             raise NameError('Capacidade deve ser maior que zero')
         self.capacity = capacity
+        self._tail = 0
+        self._head = 0
+        self.count = 0
+        self.is_empty = True
+        self.is_full = False
+        self._buffer = [0] * self.capacity
         self.clear()
 
     def clear(self):
@@ -13,7 +19,7 @@ class CircularBuffer():
         self.count = 0
         self.is_empty = True
         self.is_full = False
-        self._buffer = [0 for n in range(self.capacity)]
+        self._buffer = [0] * self.capacity
 
     def enqueue(self, item):
         if self.is_full:
@@ -42,7 +48,7 @@ class CircularBuffer():
 
         return valor_out
 
-    def toArray(self):
+    def to_array(self):
         temp_array = []
         temp_tail = self._tail
 

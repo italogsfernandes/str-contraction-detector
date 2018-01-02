@@ -20,25 +20,27 @@ import mainwindow  # This file holds our MainWindow and all design related thing
 from CircularBuffer import CircularBuffer
 
 # ThreadHandler
-from ThreadHandler import ThreadHandler
-from datetime import datetime
+from PyQt4.QtCore import SIGNAL
+from QThreadHandler import QThreadHandler
 
 # ------------------------------------------------------------------------------
-
 
 class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
+        # Circular Buffer
         self.circular_buffer_btn_bindings()
         self.myCircularBuffer = CircularBuffer(8)
 
+        # QThread Handler
         self.thread_btn_bindings()
-        self.myThreadHandler = ThreadHandler(self.count_to_ten)
         self.actual_num = 0
-        self.ultima_vez = 0
+        self.myCounter = QThreadHandler(self.generate_value)
+        self.connect(self.myCounter, SIGNAL("new_value(int)"), self.update_status_thread)
 
+    # Circular Buffer
     def circular_buffer_btn_bindings(self):
         self.btnEnqueue.clicked.connect(self.do_enqueue)
         self.btnDequeue.clicked.connect(self.do_dequeue)
@@ -46,7 +48,7 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
 
     def update_status_label(self):
         self.lblStatus.setText("Status:" +
-                               "\nArray: " + str(self.myCircularBuffer.toArray()) +
+                               "\nArray: " + str(self.myCircularBuffer.to_array()) +
                                "\nCapacity: " + str(self.myCircularBuffer.capacity) +
                                "\nSize: " + str(self.myCircularBuffer.count) +
                                "\nEmpty: " + str(self.myCircularBuffer.is_empty) +
@@ -67,6 +69,7 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         self.myCircularBuffer.clear()
         self.update_status_label()
 
+    # QThread Handler
     def thread_btn_bindings(self):
         self.btnStartThr.clicked.connect(self.do_start)
         self.btnPauseThr.clicked.connect(self.do_pause)
@@ -75,33 +78,45 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
 
     def do_start(self):
         self.actual_num = 0
-        self.myThreadHandler.start()
+        self.myCounter.start()
 
     def do_pause(self):
-        self.myThreadHandler.pause()
-        self.update_status_thread()
-
-    def do_resume(self):
-        self.myThreadHandler.resume()
-        self.update_status_thread()
-
-    def do_stop(self):
-        self.myThreadHandler.stop()
-        self.update_status_thread()
-
-    def update_status_thread(self):
+        self.myCounter.pause()
         self.lblResultThr.setText("Status:" +
-                                  "\nAlive: " + str(self.myThreadHandler.isAlive) +
-                                  "\nPaused: " + str(self.myThreadHandler.isPaused) +
+                                  "\nAlive: " + str(self.myCounter.isAlive) +
+                                  "\nRunning: " + str(self.myCounter.isRunning) +
                                   "\nValor Atual: " + str(self.actual_num))
 
-    def count_to_ten(self):
-        if datetime.now().second != self.ultima_vez:
-            self.ultima_vez = datetime.now().second
-            self.actual_num += 1
-            self.actual_num %= 10
-            self.update_status_thread()
+    def do_resume(self):
+        self.myCounter.resume()
 
+    def do_stop(self):
+        self.myCounter.stop()
+        self.lblResultThr.setText("Status:" +
+                                  "\nAlive: " + str(self.myCounter.isAlive) +
+                                  "\nRunning: " + str(self.myCounter.isRunning) +
+                                  "\nValor Atual: " + str(self.actual_num))
+
+    def update_status_thread(self, generated_value):
+        self.lblResultThr.setText("Status:" +
+                                  "\nAlive: " + str(self.myCounter.isAlive) +
+                                  "\nRunning: " + str(self.myCounter.isRunning) +
+                                  "\nValor Atual: " + str(generated_value))
+
+        self.editResultThr.setPlainText("Valor Atual: " + str(generated_value) +
+                                         "\n" + self.editResultThr.toPlainText())
+
+    def generate_value(self):
+        self.myCounter.msleep(500)
+        self.actual_num += 1
+        self.actual_num %= 16
+        self.myCounter.emit(SIGNAL("new_value(int)"), self.actual_num)
+
+    # Arduino Handler
+    def closeEvent(self, QCloseEvent):
+        # QThread Handler
+        self.myCounter.stop()
+        super(self.__class__, self).closeEvent(QCloseEvent)
 
 
 def main():
