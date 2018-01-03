@@ -1,3 +1,19 @@
+# -*- coding: utf-8 -*-
+#------------------------------------------------------------------------------
+# FEDERAL UNIVERSITY OF UBERLANDIA
+# Faculty of Electrical Engineering
+# Biomedical Engineering Lab
+#------------------------------------------------------------------------------
+# Author: Italo Gustavo Sampaio Fernandes
+# Contact: italogsfernandes@gmail.com
+# Git: www.github.com/italogfernandes
+#------------------------------------------------------------------------------
+# Decription:
+#------------------------------------------------------------------------------
+
+
+import threading
+
 class CircularBuffer():
     """docstring for ."""
     def __init__(self, capacity):
@@ -12,6 +28,7 @@ class CircularBuffer():
         self.is_full = False
         self._buffer = [0] * self.capacity
         self.clear()
+        self.mutex = threading.Lock()
 
     def clear(self):
         self._tail = 0
@@ -34,6 +51,11 @@ class CircularBuffer():
         self.is_empty = False
         return True
 
+    def secure_enqueue(self, item):
+        self.mutex.acquire()
+        self.enqueue(item)
+        self.mutex.release()
+
     def dequeue(self):
         if self.is_empty:
             raise NameError('Buffer vazio')
@@ -46,6 +68,12 @@ class CircularBuffer():
         self.is_empty = self.count == 0
         self.is_full = False
 
+        return valor_out
+
+    def secure_dequeue(self):
+        self.mutex.acquire()
+        valor_out = self.dequeue()
+        self.mutex.release()
         return valor_out
 
     def to_array(self):

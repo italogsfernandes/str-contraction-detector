@@ -23,6 +23,9 @@ from CircularBuffer import CircularBuffer
 from PyQt4.QtCore import SIGNAL
 from QThreadHandler import QThreadHandler
 
+# Arduino Handler
+from ArduinoHandler import ArduinoHandler
+
 # ------------------------------------------------------------------------------
 
 class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
@@ -39,6 +42,12 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         self.actual_num = 0
         self.myCounter = QThreadHandler(self.generate_value)
         self.connect(self.myCounter, SIGNAL("new_value(int)"), self.update_status_thread)
+
+        # Arduino Handler
+        self.myArduinoHandler = ArduinoHandler('/dev/ttyACM0')
+        self.arduinoDataConsumer = QThreadHandler(self.arduino_consumer)
+        self.connect(self.arduinoDataConsumer, SIGNAL('new_arduino_data(int)'), self.arduino_data_ready)
+
 
     # Circular Buffer
     def circular_buffer_btn_bindings(self):
@@ -58,11 +67,11 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
                                "\nTail: " + str(self.myCircularBuffer._tail))
 
     def do_enqueue(self):
-        self.myCircularBuffer.enqueue(str(self.lineEditEnqueue.text()))
+        self.myCircularBuffer.secure_enqueue(str(self.lineEditEnqueue.text()))
         self.update_status_label()
 
     def do_dequeue(self):
-        self.lineEditDequeue.setText(str(self.myCircularBuffer.dequeue()))
+        self.lineEditDequeue.setText(str(self.myCircularBuffer.secure_dequeue()))
         self.update_status_label()
 
     def do_clear(self):
@@ -77,8 +86,9 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         self.btnStopThr.clicked.connect(self.do_stop)
 
     def do_start(self):
-        self.actual_num = 0
-        self.myCounter.start()
+        self.do_start_arduino_handler()
+        #self.actual_num = 0
+        #self.myCounter.start()
 
     def do_pause(self):
         self.myCounter.pause()
@@ -113,9 +123,35 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         self.myCounter.emit(SIGNAL("new_value(int)"), self.actual_num)
 
     # Arduino Handler
+
+    def do_start_arduino_handler(self):
+        self.arduinoDataConsumer.start()
+        self.myArduinoHandler.start_acquisition()
+
+    def do_stop_arduino_handler(self):
+        self.myArduinoHandler.stop_acquisition()
+        self.arduinoDataConsumer.stop()
+
+
+    def arduino_consumer(self):
+        if self.myArduinoHandler.data_waiting():
+            aux = self.myArduinoHandler.buffer_acquisition.secure_dequeue()
+
+            self.arduinoDataConsumer.emit(
+                SIGNAL('new_arduino_data(int)'),
+                aux)
+
+    def arduino_data_ready(self,arduino_value):
+        self.lblResultThr.setText(str(arduino_value))
+
+    # Closing
     def closeEvent(self, QCloseEvent):
         # QThread Handler
         self.myCounter.stop()
+
+        # Arduino Handler
+        self.myArduinoHandler.stop_acquisition()
+        self.arduinoDataConsumer.stop()
         super(self.__class__, self).closeEvent(QCloseEvent)
 
 
