@@ -12,40 +12,35 @@
 # ------------------------------------------------------------------------------
 from ThreadHandler import ThreadHandler, InfiniteTimer
 from ArduinoHandler import ArduinoHandler
-from pyqtgraphHandler import pyqtgraphHandler
+from QtArduinoPlotter import QtArduinoPlotter
+from emgplotHandler import emgplotHandler
 # ------------------------------------------------------------------------------
+import numpy as np
+import scipy as sp
+import scipy.fftpack as fftpack
 
-
-class QtArduinoPlotter:
+class QtArduinoEMGPlotter(QtArduinoPlotter):
     def __init__(self):
-        self.plotHandler = pyqtgraphHandler(5000)
+        self.plotHandler = emgplotHandler(5000)
         self.arduinoHandler = ArduinoHandler()
         self.consumerThread = ThreadHandler(self.consumer_function)
         self.timerStatus = InfiniteTimer(0.1, self.print_buffers_status)
+        self.emg_bruto = 0
 
     def consumer_function(self):
         if self.arduinoHandler.data_waiting():
-            self.plotHandler.put(self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0)
+            self.emg_bruto = self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0 - 2.5
+            self.plotHandler.put(self.emg_bruto)
 
-    def get_buffers_status(self,separator):
-        return self.arduinoHandler.get_buffers_status(separator) + separator + self.plotHandler.get_buffers_status()
-
-    def print_buffers_status(self):
-        print self.get_buffers_status(" - ")
-
-    def start(self):
-        self.timerStatus.start()
-        self.consumerThread.start()
-        self.arduinoHandler.start_acquisition()
-
-    def stop(self):
-        self.arduinoHandler.stop_acquisition()
-        self.consumerThread.stop()
-        self.timerStatus.stop()
 
 if __name__ == '__main__':
-    my_arduino_ploter = QtArduinoPlotter()
-
+    my_arduino_ploter = QtArduinoEMGPlotter()
+    my_arduino_ploter.plotHandler.emg_bruto_visible = False
+    my_arduino_ploter.plotHandler.hilbert_visible = True
+    my_arduino_ploter.plotHandler.hilbert_retificado_visible = False
+    my_arduino_ploter.plotHandler.envoltoria_visible = True
+    my_arduino_ploter.plotHandler.limiar_visible = True
+    my_arduino_ploter.plotHandler.detection_sites_visible = False
     my_arduino_ploter.start()
     my_arduino_ploter.plotHandler.appear()
     my_arduino_ploter.stop()

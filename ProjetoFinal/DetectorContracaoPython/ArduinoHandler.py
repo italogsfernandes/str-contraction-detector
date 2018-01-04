@@ -111,12 +111,24 @@ class ArduinoHandler():
 if __name__ == '__main__':
     myArduinoHandler = ArduinoHandler()
 
-    def consumer():
+    def printer():
         if myArduinoHandler.data_waiting():
             print myArduinoHandler.buffer_acquisition.get()
             # time.sleep(0.01) # Uncomment if you want to see the buffer_acquisition to get full
 
-    consumer_thr = ThreadHandler(consumer)
+
+    from datetime import datetime
+    horario = datetime.now()
+    arq = open("leituras-" + str(horario) + '-dados.txt', 'w')
+    arq.write("Leituras salvas com Arduino Handler - Datetime: " + str(horario) + "\n")
+    arq.write("leituras = [")
+
+    def saver():
+        if myArduinoHandler.data_waiting():
+            arq.write(str(myArduinoHandler.buffer_acquisition.get()))
+            arq.write(', ')
+
+    consumer_thr = ThreadHandler(saver)
 
     def show_status():
         print myArduinoHandler

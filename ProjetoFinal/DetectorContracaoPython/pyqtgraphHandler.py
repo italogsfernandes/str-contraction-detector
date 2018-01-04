@@ -55,9 +55,7 @@ class pyqtgraphHandler:
         #self.plot.
         # self.plot.showGrid(2,3)
         #self.plot.hideAxis(ax)
-        # lr = pg.LinearRegionItem([400, 700])
-        # lr.setZValue(-10)
-        # self.plot.addItem(lr)
+        #
 
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_y_points)
