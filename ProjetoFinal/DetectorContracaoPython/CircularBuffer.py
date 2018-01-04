@@ -1,88 +1,107 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # FEDERAL UNIVERSITY OF UBERLANDIA
 # Faculty of Electrical Engineering
 # Biomedical Engineering Lab
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Author: Italo Gustavo Sampaio Fernandes
 # Contact: italogsfernandes@gmail.com
 # Git: www.github.com/italogfernandes
-#------------------------------------------------------------------------------
-# Decription:
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Description:
+# ------------------------------------------------------------------------------
 
 
-import threading
-
-class CircularBuffer():
+class CircularBuffer:
     """docstring for ."""
-    def __init__(self, capacity):
-
-        if capacity < 0:
-            raise NameError('Capacidade deve ser maior que zero')
-        self.capacity = capacity
+    def __init__(self, maxsize):
+        if maxsize < 0:
+            raise Exception('Maxsize must be greater than zero.')
+        self.maxsize = maxsize
         self._tail = 0
         self._head = 0
         self.count = 0
-        self.is_empty = True
-        self.is_full = False
-        self._buffer = [0] * self.capacity
-        self.clear()
-        self.mutex = threading.Lock()
+        self.buffer = [0] * self.maxsize
+
+    def is_empty(self):
+        """Return True if the CircularBuffer is empty, False otherwise."""
+        n = not self.count
+        return n
+
+    def is_full(self):
+        """Return True if the CircularBuffer is full, False otherwise."""
+        n = 0 < self.maxsize == self.count
+        return n
+
+    def qsize(self):
+        return self.count
+
+    def put(self, item):
+        """Only enqueue the item if a free slot is immediately available.
+        Otherwise raise the Full exception."""
+        if self.is_full():
+            raise Exception('The circular buffer is full.')
+        self.buffer[self._head] = item
+        self._head += 1
+        self._head %= self.maxsize
+        self.count += 1
+
+    def get(self):
+        """Remove and return an item from the circular buffer.
+        Otherwise raise the Empty exception."""
+        if self.is_empty():
+            raise Exception('The circular buffer is empty.')
+        n = self.buffer[self._tail]
+        self._tail += 1
+        self._tail %= self.maxsize
+        self.count -= 1
+        return n
 
     def clear(self):
         self._tail = 0
         self._head = 0
         self.count = 0
-        self.is_empty = True
-        self.is_full = False
-        self._buffer = [0] * self.capacity
-
-    def enqueue(self, item):
-        if self.is_full:
-            return False
-
-        self._buffer[self._head] = item
-        self._head += 1
-        self._head %= self.capacity
-        self.count += 1
-
-        self.is_full = self.count == self.capacity
-        self.is_empty = False
-        return True
-
-    def secure_enqueue(self, item):
-        self.mutex.acquire()
-        self.enqueue(item)
-        self.mutex.release()
-
-    def dequeue(self):
-        if self.is_empty:
-            raise NameError('Buffer vazio')
-
-        valor_out = self._buffer[self._tail]
-        self._tail += 1
-        self._tail %= self.capacity
-
-        self.count -= 1
-        self.is_empty = self.count == 0
-        self.is_full = False
-
-        return valor_out
-
-    def secure_dequeue(self):
-        self.mutex.acquire()
-        valor_out = self.dequeue()
-        self.mutex.release()
-        return valor_out
+        self.buffer = [0] * self.maxsize
 
     def to_array(self):
-        temp_array = []
-        temp_tail = self._tail
+        if self.is_empty():
+            return []
 
-        for n in range(self.count):
-            temp_array.append(self._buffer[temp_tail])
-            temp_tail += 1
-            temp_tail %= self.capacity
+        if self._tail < self._head:
+            return self.buffer[self._tail:self._head]
+        else:
+            return self.buffer[self._tail:]+self.buffer[:self._head]
 
-        return temp_array
+    def __str__(self):
+        return "CircularBuffer Object:" +\
+               "\n\tArray: " + str(self.to_array()) +\
+               "\n\tCapacity: " + str(self.maxsize) +\
+               "\n\tSize: " + str(self.count) +\
+               "\n\tEmpty: " + str(self.is_empty()) +\
+               "\n\tFull: " + str(self.is_full()) +\
+               "\n\tItems: " + str(self.buffer) +\
+               "\n\tHead: " + str(self._head) +\
+               "\n\tTail: " + str(self._tail)
+
+if __name__ == '__main__':              # if we're running file directly and not importing it
+    myCircularBuffer = CircularBuffer(4)
+    while True:
+        print '-------------------------------'
+        print myCircularBuffer
+        print '-------------------------------'
+        print 'Menu'
+        print 'px - put(x) '
+        print 'g - get()'
+        print 'c - clear()'
+        print 'q - Quit'
+        print '-------------------------------'
+        str_key = raw_input()
+        if str_key == 'q':
+            break
+        elif str_key.startswith('p'):
+            myCircularBuffer.put(str_key[1:])
+        elif str_key == 'g':
+            print "Result: " + str(myCircularBuffer.get())
+        elif str_key == 'c':
+            myCircularBuffer.clear()
+
