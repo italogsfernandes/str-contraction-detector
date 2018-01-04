@@ -72,6 +72,14 @@ class pyqtgraphHandler:
     def get_buffers_status(self):
         return "Plot: %4d" % (self.plot_buffer.qsize()) + '/' + str(self.plot_buffer.maxsize)
 
+    def appear(self):
+        self.timer.start(0)
+        import sys
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()
+
+        self.timer.stop()
+
 if __name__ == '__main__':
 
     my_plot = pyqtgraphHandler(5000)
@@ -86,10 +94,4 @@ if __name__ == '__main__':
 
     timer = InfiniteTimer(0.001, generate_point)
     timer.start()
-    my_plot.timer.start(0)
-
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
-
-
+    my_plot.appear()
