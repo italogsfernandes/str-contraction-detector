@@ -26,6 +26,7 @@ from QThreadHandler import QThreadHandler
 # Arduino Handler
 from ArduinoHandler import ArduinoHandler
 
+from Queue import Queue
 # ------------------------------------------------------------------------------
 
 class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
@@ -36,6 +37,10 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         # Circular Buffer
         self.circular_buffer_btn_bindings()
         self.myCircularBuffer = CircularBuffer(8)
+
+        # Circular Queue
+        self.queue_btn_bindings()
+        self.myQueue = Queue()
 
         # QThread Handler
         self.thread_btn_bindings()
@@ -78,6 +83,11 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         self.myCircularBuffer.clear()
         self.update_status_label()
 
+    # Queue
+
+    def queue_btn_bindings(self):
+
+
     # QThread Handler
     def thread_btn_bindings(self):
         self.btnStartThr.clicked.connect(self.do_start)
@@ -86,7 +96,7 @@ class ExampleApp(QtGui.QMainWindow, mainwindow.Ui_MainWindow):
         self.btnStopThr.clicked.connect(self.do_stop)
 
     def do_start(self):
-        self.do_start_arduino_handler()
+        #self.do_start_arduino_handler()
         #self.actual_num = 0
         #self.myCounter.start()
 
