@@ -13,70 +13,54 @@
 
 import serial
 import serial.tools.list_ports as serial_tools
-
-import QThreadHandler
-from PyQt4.QtCore import QObject, SIGNAL
-from PyQt4.QtGui import QMessageBox
-
-import CircularBuffer
 from ctypes import c_short
 
+from ThreadHandler import ThreadHandler, InfiniteTimer
+from CircularQueue import CircularQueue
+from Queue import Queue
+
+
 class ArduinoConstants():
-    PACKETSIZE = 4
-    PACKETSTART = '$'
-    PACKETEND = '\n'
-    ARDUINODESCRIPTION = "Arduino"
+    PACKET_SIZE = 4
+    PACKET_START = '$'
+    PACKET_END = '\n'
+    MANUFACTURER = 'Arduino (www.arduino.cc)'
+    DUE_description = 'Arduino Due Prog. Port'
+    UNO_description = 'ttyACM1'
+    HINA_NANO_description = 'USB2.0-Serial'
+    DUE_manufacturer = 'Arduino (www.arduino.cc)'
+    UNO_manufacturer = 'Arduino (www.arduino.cc)'
+    CHINA_NANO_manufacture = ''
+    DUE_product = 'Arduino Due Prog. Port'
+    UNO_product = ''
+    CHINA_NANO_product = 'USB2.0-Serial'
 
 
-class ArduinoHandler(QObject):
-    def __init__(self, port_name = "None", baudrate = 115200, readtimeout = 1000):
-        super(self.__class__, self).__init__()
-
+class ArduinoHandler():
+    def __init__(self, port_name=None, baudrate=115200):
+        if port_name is None:
+            port_name = ArduinoHandler.get_arduino_serial_port()
+        self.serial_tools_obj = [s for s in serial_tools.comports() if s.device == port_name][0]
         self.serialPort = serial.Serial()
-        self.serialPort.setPort(port_name)
+        self.serialPort.port = port_name
         self.serialPort.baudrate = baudrate
-        self.serialPort.timeout = readtimeout
-
-        self.thread_acquisition = QThreadHandler.QThreadHandler(self.acquire_routine)
-        self.connect(self.thread_acquisition, SIGNAL('finished()'), self.on_end_function)
-
-        self.buffer_acquisition  = CircularBuffer.CircularBuffer(1024)
+        self.thread_acquisition = ThreadHandler(self.acquire_routine,self.close)
+        self.buffer_acquisition = Queue(1024)
 
     def data_waiting(self):
-        return self.buffer_acquisition.count > 0
-
-    def on_end_function(self):
-        if self.serialPort.isOpen():
-            self.serialPort.close()
+        return self.buffer_acquisition.qsize()
 
     def open(self):
-        try:
+        if not self.serialPort.isOpen():
             self.serialPort.open()
             self.serialPort.flushInput()
             self.serialPort.flushOutput()
-        except:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Não foi possivel abrir a porta serial")
-            msg.setWindowTitle("Erro")
-            retval = msg.exec_()
 
     def close(self):
-        try:
+        if self.serialPort.isOpen():
             self.serialPort.close()
-        except:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Não foi possivel fechar a porta serial")
-            msg.setWindowTitle("Erro")
-            retval = msg.exec_()
 
     def start_acquisition(self):
-
-        if "None" in str(self.serialPort.port):
-            self.serialPort.setPort(str(ArduinoHandler.get_arduino_serial_port()))
-
-        print "trying to open" + str(self.serialPort.port)
         self.open()
         self.thread_acquisition.start()
 
@@ -85,14 +69,14 @@ class ArduinoHandler(QObject):
 
     @staticmethod
     def get_arduino_serial_port():
-        for serial_port_found in serial_tools.comports():
-            if ArduinoConstants.ARDUINODESCRIPTION in serial_port_found.description:
-                return str(serial_port_found).split(" ")[0]
-
-        if len(serial_tools.comports()) > 0:
-            return str(serial_tools.comports()[0]).split(" ")[0]
-
-        return "/dev/ttyACM0"
+        serial_ports = serial_tools.comports()
+        if len(serial_ports) == 0:
+            return ""
+        if len(serial_ports) == 1:
+            return serial_ports[0].device
+        for serial_port_found in serial_ports:
+            if serial_port_found.manufacturer == ArduinoConstants.MANUFACTURER:
+                return serial_port_found.device
 
     @staticmethod
     def to_int16(msb_byte, lsb_byte):
@@ -100,23 +84,94 @@ class ArduinoHandler(QObject):
 
     def acquire_routine(self):
         if self.serialPort.isOpen():
-            if self.serialPort.inWaiting() > ArduinoConstants.PACKETSIZE:
-
+            if self.serialPort.inWaiting() > ArduinoConstants.PACKET_SIZE:
                 _starter_byte = self.serialPort.read()
-                if _starter_byte == ArduinoConstants.PACKETSTART:
+                if _starter_byte == ArduinoConstants.PACKET_START:
                     _msb = self.serialPort.read()
                     _lsb = self.serialPort.read()
                     _msb = ord(_msb)
                     _lsb = ord(_lsb)
                     _end_byte = self.serialPort.read()
-                    if _end_byte == ArduinoConstants.PACKETEND:
+                    if _end_byte == ArduinoConstants.PACKET_END:
+                        self.buffer_acquisition.put(ArduinoHandler.to_int16(_msb, _lsb))
 
-                        _res = self.buffer_acquisition.secure_enqueue(
-                            ArduinoHandler.to_int16(_msb, _lsb))
-                        if not _res:
-                            self.emit(SIGNAL("aquisition_error"))
+    def __str__(self):
+        return "ArduinoHandlerObject" +\
+               "\n\tSerialPort: " + str(self.serial_tools_obj.device) +\
+               "\n\tDescription: " + str(self.serial_tools_obj.description) +\
+               "\n\tOpen: " + str(self.serialPort.isOpen()) +\
+               "\n\tAcquiring: " + str(self.thread_acquisition.isRunning) +\
+               "\n\tInWaiting: " + str(self.serialPort.inWaiting() if self.serialPort.isOpen() else 'Closed') +\
+               "\n\tBufferAcq: " + str(self.buffer_acquisition.qsize())
 
+if __name__ == '__main__':
+    myArduinoHandler = ArduinoHandler()
 
+    def consumer():
+        if myArduinoHandler.data_waiting():
+            print myArduinoHandler.buffer_acquisition.get()
+            # time.sleep(0.01) # Uncomment if you want to see the buffer_acquisition to get full
 
+    consumer_thr = ThreadHandler(consumer)
+
+    def show_status():
+        print myArduinoHandler
+    status_timer = InfiniteTimer(0.5, show_status)
+    while True:
+        print '-------------------------------'
+        print myArduinoHandler
+        print '-------------------------------'
+        print 'Menu'
+        print '-------------------------------'
+        print 'start - Automatically Starts Everything'
+        print 'stop - Automatically Stops Everything'
+        print 'q - Quit'
+        print '-------------------------------'
+        print 'op - open() '
+        print 'cl - close()'
+        print 'ra - readall()'
+        print 'sth - start Consumer'
+        print 'pth - pause Consumer'
+        print 'rth - resume Consumer'
+        print 'kth - kill Consumer'
+        print 'sacq - start Aquisition'
+        print 'kacq - kill Aquisition'
+        print '-------------------------------'
+        str_key = raw_input()
+        if 'q' in str_key:
+            myArduinoHandler.stop_acquisition()
+            consumer_thr.stop()
+            status_timer.stop()
+            break
+        elif 'op' in str_key:
+            myArduinoHandler.open()
+        elif 'cl' in str_key:
+            myArduinoHandler.close()
+        elif 'ra' in str_key:
+            print myArduinoHandler.serialPort.read_all()
+        elif 'sth' in str_key:
+            status_timer.start()
+            consumer_thr.start()
+        elif 'pth' in str_key:
+            consumer_thr.pause()
+        elif 'rth' in str_key:
+            consumer_thr.resume()
+        elif 'kth' in str_key:
+            status_timer.stop()
+            consumer_thr.stop()
+        elif 'sacq' in str_key:
+            status_timer.start()
+            myArduinoHandler.start_acquisition()
+        elif 'kacq' in str_key:
+            status_timer.stop()
+            myArduinoHandler.stop_acquisition()
+        elif 'start' in str_key:
+            status_timer.start()
+            consumer_thr.start()
+            myArduinoHandler.start_acquisition()
+        elif 'stop' in str_key:
+            status_timer.stop()
+            myArduinoHandler.stop_acquisition()
+            consumer_thr.stop()
 
 
