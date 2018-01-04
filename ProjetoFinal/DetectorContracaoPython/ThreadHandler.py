@@ -13,70 +13,135 @@
 # Description:
 # ------------------------------------------------------------------------------
 from threading import Thread
-from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
+from threading import Event
 # ------------------------------------------------------------------------------
 
-
-class ThreadHandler(QObject):
-    def __init__(self,_worker=None):
-        super(self.__class__, self).__init__()
+class ThreadHandler:
+    def __init__(self, worker=None, on_end_function=None):
         self.thread = Thread(target=self.run)
-        self.worker = _worker
-        self.stringsignal = pyqtSignal(str, name="string_signal")
-        self.intsignal = pyqtSignal(int,name="int_signal")
-        self.floatsignal = pyqtSignal(float,name="floatsignal")
+        self.worker = worker
+        self.on_end_function = on_end_function
         self.isAlive = False
-        self.isPaused = False
-        self.flagRun = True
-        self.flagPause = True
+        self.isRunning = False
+        self.isFinished = False
 
     def start(self):
-        if not self.isAlive:
-            self.thread.start()
-            self.isAlive = True
-            self.flagPause = False
+        self.isAlive = True
+        self.isRunning = True
+        self.thread.start()
+        self.isFinished = False
 
     def pause(self):
-        if self.isAlive & self.isPaused == False:
-            self.flagPause = True
-            self.isPaused = True
+        self.isRunning = False
 
     def resume(self):
-        if self.isAlive and self.isPaused:
-            self.flagPause = False
-            self.isPaused = False
+        self.isRunning = True
 
     def stop(self):
-        if self.isAlive:
-            self.flagPause = True
-            self.flagRun = False
-        self.thread = Thread(target=self.run)
         self.isAlive = False
-        self.isPaused = False
-        self.flagRun = True
-        self.flagPause = True
+        self.isRunning = False
+        self.thread = Thread(target=self.run)
 
     def run(self):
-        while self.flagRun:
-            while self.flagPause is False:
+        while self.isAlive:
+            if self.isRunning:
                 if self.worker is not None:
                     self.worker()
+        if self.on_end_function is not None:
+            self.on_end_function()
+        self.isFinished = True
 
-if __name__ == "__main__":
+    def __str__(self):
+        return "ThreadHandler Object" +\
+               "\n\tAlive: " + str(self.isAlive) +\
+                "\n\tRunning: " + str(self.isRunning) +\
+                "\n\tFinished: " + str(self.isFinished) +\
+                "\n\tWorker: " + str(self.worker) +\
+                "\n\tEndFuction: " + str(self.on_end_function)
 
-    # This example demonstrates how to use the ThreadHandler class
-    # for reading user input
 
-    th = []
+class InfiniteTimer(ThreadHandler):
+    """Call a function after a specified number of seconds:
 
-    def work():
-        global th
-        print 'waiting....'
-        raw_input()
-        print 'gotcha!'
-        print 'killing thread'
-        th.kill()
-        print 'terminated'
+            t = Timer(30.0, f, args=[], kwargs={})
+            t.start()
+            t.cancel()     # stop the timer's action if it's still waiting
 
-    th = ThreadHandler(work)
-    th.start()
+    """
+
+    def __init__(self, interval, worker, on_end_function=None, args=[], kwargs={}):
+        ThreadHandler.__init__(self)
+        self.interval = interval
+        self.worker = worker
+        self.on_end_function = on_end_function
+        self.args = args
+        self.kwargs = kwargs
+        self.waiter = Event()
+
+    def run(self):
+        while self.isAlive:
+            if self.isRunning:
+                self.waiter.wait(self.interval)
+                self.worker()
+        if self.on_end_function is not None:
+            self.on_end_function()
+        self.isFinished = True
+
+
+if __name__ == '__main__':              # if we're running file directly and not importing it
+    from time import sleep
+    from datetime import datetime
+
+    def counter():
+        print '-'*10
+        print "Next 10 seconds:"
+        for n in range(10, 0, -1):
+            print str(n) + ": " + str(datetime.now())
+            sleep(1)
+
+    myThreadHandler = ThreadHandler(counter)
+
+    def show_time():
+        print str(datetime.now())
+
+    myInfiniteTimer = InfiniteTimer(1, show_time)
+
+    while True:
+        print '-------------------------------'
+        print myThreadHandler
+        print '-------------------------------'
+        print 'Menu'
+        print '*' * 5 + 'Thread' + '*' * 5
+        print 'st - start() '
+        print 'sp - stop()'
+        print 'p - pause()'
+        print 'r - resume()'
+        print '*' * 5 + 'Timer' + '*' *5
+        print 'stt - start() '
+        print 'spt - stop()'
+        print 'pt - pause()'
+        print 'rt - resume()'
+        print '-------------------------------'
+        print 'q - Quit'
+        print '-------------------------------'
+        str_key = raw_input()
+        if str_key == 'q':
+            myThreadHandler.stop()
+            myInfiniteTimer.stop()
+            break
+        elif str_key == 'st':
+            myThreadHandler.start()
+        elif str_key == 'sp':
+            myThreadHandler.stop()
+        elif str_key == 'p':
+            myThreadHandler.pause()
+        elif str_key == 'r':
+            myThreadHandler.resume()
+        elif str_key == 'stt':
+            myInfiniteTimer.start()
+        elif str_key == 'spt':
+            myInfiniteTimer.stop()
+        elif str_key == 'pt':
+            myInfiniteTimer.pause()
+        elif str_key == 'rt':
+            myInfiniteTimer.resume()
