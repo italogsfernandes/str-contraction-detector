@@ -29,7 +29,11 @@ class pyqtgraphHandler:
         self.plot.setWindowTitle('PlotterHandler')
         self.plot.setRange(QtCore.QRectF(0, -10, 5000, 20))
         self.plot.setLabel('bottom', 'Index', units='un')
-        self.curve = self.plot.plot()
+        self.curve = self.plot.plot(pen='b')
+        self.plot.enableAutoRange('xy', True)
+        # lr = pg.LinearRegionItem([400, 700])
+        # lr.setZValue(-10)
+        # self.plot.addItem(lr)
 
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_y_points)
