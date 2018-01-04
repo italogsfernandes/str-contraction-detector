@@ -18,7 +18,7 @@ from matplotlibHandler import PyPlotHandler
 
 class ArduinoPlotter:
     def __init__(self):
-        self.plotHandler = PyPlotHandler(100, [0, 10, 0, 5])
+        self.plotHandler = PyPlotHandler(2000, [0, 2000, 0, 5])
         self.arduinoHandler = ArduinoHandler()
         self.consumerThread = ThreadHandler(self.consumer_function)
         self.timerStatus = InfiniteTimer(0.1, self.print_buffers_status)
@@ -28,7 +28,7 @@ class ArduinoPlotter:
             self.plotHandler.put(self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0)
 
     def get_buffers_status(self,separator):
-        return self.arduinoHandler.get_buffers_status() + separator + self.plotHandler.get_buffers_status()
+        return self.arduinoHandler.get_buffers_status(separator) + separator + self.plotHandler.get_buffers_status()
 
     def print_buffers_status(self):
         print self.get_buffers_status(" - ")
