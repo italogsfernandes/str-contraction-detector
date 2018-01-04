@@ -17,6 +17,7 @@ from pyqtgraph.Qt import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.ptime import time
+from PyQt4.QtGui import QBrush, QColor, QPen, QGraphicsRectItem
 # ------------------------------------------------------------------------------
 
 
@@ -26,11 +27,34 @@ class pyqtgraphHandler:
 
         self.app = QtGui.QApplication([])
         self.plot = pg.plot()
+
+        self.plot.setBackgroundBrush(QBrush(QColor.fromRgb(255, 255, 255)))
+        #self.plot.windowTitle().
+        #self.plot.setForegroundBrush(QBrush(QColor.fromRgb(250,0,0,30)))
         self.plot.setWindowTitle('PlotterHandler')
         self.plot.setRange(QtCore.QRectF(0, -10, 5000, 20))
         self.plot.setLabel('bottom', 'Index', units='un')
+        self.plot.setLabel('left', 'Valor', units='V')
         self.curve = self.plot.plot(pen='b')
-        self.plot.enableAutoRange('xy', True)
+        # self.plot.enableAutoRange('xy', True)
+        self.plot.enableAutoRange('xy', False)
+        self.plot.setXRange(0, 5000)
+        self.plot.setYRange(0, 5)
+
+        #self.plot.enableAutoRange('xy', True)
+        #grade = pg.GridItem()
+        #self.plot.addItem(grade)
+        self.plot.showGrid(True, True)
+        #self.plot.showAxis('top', False)
+        #self.plot.showAxis('bottom', False)
+        #self.plot.showAxis('left', False)
+        #self.plot.showAxis('right', False)
+        self.plot.getAxis('left').setPen(QPen(QColor.fromRgb(0,0,0)))
+        self.plot.getAxis('bottom').setPen(QPen(QColor.fromRgb(0, 0, 0)))
+        #print self.plot.getRange
+        #self.plot.
+        # self.plot.showGrid(2,3)
+        #self.plot.hideAxis(ax)
         # lr = pg.LinearRegionItem([400, 700])
         # lr.setZValue(-10)
         # self.plot.addItem(lr)
@@ -70,7 +94,7 @@ class pyqtgraphHandler:
         else:
             s = np.clip(dt * 3., 0, 1)
             self.fps = self.fps * (1 - s) + (1.0 / dt) * s
-        self.plot.setTitle('%0.2f fps' % self.fps)
+        self.plot.setTitle('<font color="red">%0.2f fps</font>' % self.fps)
         self.app.processEvents()  # force complete redraw for every plot
 
     def get_buffers_status(self):
