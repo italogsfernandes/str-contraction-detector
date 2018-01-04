@@ -121,6 +121,10 @@ class PyPlotHandler:
     def show(self):
         plt.show()
 
+    def get_buffers_status(self):
+        return "Plot: " +\
+               str(self.plot_buffer.qsize()) + '/' + str(self.plot_buffer.maxsize)
+
 if __name__ == '__main__':
     my_plot = PyPlotHandler(50, [0, 50, 0, 1])
 

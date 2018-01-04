@@ -104,6 +104,12 @@ class ArduinoHandler():
                "\n\tInWaiting: " + str(self.serialPort.inWaiting() if self.serialPort.isOpen() else 'Closed') +\
                "\n\tBufferAcq: " + str(self.buffer_acquisition.qsize())
 
+    def get_buffers_status(self, separator):
+        return "Port: " +\
+               str(self.serialPort.inWaiting() if self.serialPort.isOpen() else '-') + '/' + str(4096) +\
+               separator + "Acq: " +\
+               str(self.buffer_acquisition.qsize()) + '/' + str(self.buffer_acquisition.maxsize)
+
 if __name__ == '__main__':
     myArduinoHandler = ArduinoHandler()
 
