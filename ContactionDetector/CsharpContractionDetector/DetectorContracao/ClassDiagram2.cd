@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DetectorContracao.ArduinoEMGPlotter">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAEMAAAAIAEAgAAAAFAAAAAAAAAAACAAwQAABAAAAAA=</HashCode>
+      <FileName>ArduinoEMGPlotter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.ArduinoConstants">
+    <Position X="2.75" Y="3.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAEAAAAAAAAAAAAAAAAAQAAAAAAAABA=</HashCode>
+      <FileName>ArduinoHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.ArduinoHandler">
+    <Position X="6.75" Y="0.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AACEIAAAAACAIAAIAACAEAQCIAAIABAACgAEAICAAAA=</HashCode>
+      <FileName>ArduinoHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.ArduinoPlotter">
+    <Position X="3.5" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACCAAAAQAAAAAAAABAAAAAIAAAAgAAAAAAAk=</HashCode>
+      <FileName>ArduinoPlotter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.Butter">
+    <Position X="5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Butter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.ChartHandler">
+    <Position X="14" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAYCABAAAAABQAAAAkAQABgQAQIAAAAAEAiQAQAA=</HashCode>
+      <FileName>ChartHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.CircularBuffer&lt;T&gt;">
+    <Position X="18" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AARAAAIgAAAQAAAAACAAAEQCAAgCBAAAhoBAAIBRIAA=</HashCode>
+      <FileName>CircularBuffer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.EMGChart">
+    <Position X="10.5" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABRAACICBQAAUMAABAAABAAAAABBAIiAAIAAA=</HashCode>
+      <FileName>EMGChart.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DetectorContracao.ThreadHandler">
+    <Position X="21.25" Y="0.5" Width="2.75" />
+    <NestedTypes>
+      <Delegate Name="DetectorContracao.ThreadHandler.ThreadRoutine" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ThreadHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAgAQIACCAAEgEAEAAAAgAAAAAAAAAAIAAAAAgAAAA=</HashCode>
+      <FileName>ThreadHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
