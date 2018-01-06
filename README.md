@@ -36,15 +36,6 @@ um filtro passa-baixa do sinal retificado para obter a envoltória. Com esta env
 ## Warning: Undocumented codes!!!
 I will comment it later... there is almost no PEP8 conventions here.
 
-## More Info
-Estes são os primeiros links que achei quando joguei a ideia no google:
-* [Wizard's Chess](http://poe.olin.edu/poe2014/knights/): The same ideia of this project.
-* [ChessInfo](https://pino.github.io/chessinfo.html): Responsive chessboard with integrated game logic and speech recognition.
-* [JabberChess](https://cmusphinx.github.io/data/chess/ExtendedEssay.pdf): A Mobile Chess App Speech Recognizer for Visual and Motion Impaired Users
-* [Voice Activated Chess Set](http://ideaexchange.uakron.edu/cgi/viewcontent.cgi?article=1356&context=honors_research_projects)
-* [A nice video](https://www.youtube.com/watch?v=QEGJUZoUTCE): Voice Operated Chess Board
-*  [Another Video](https://www.youtube.com/watch?v=dX37LFv8jWY): Wireless Arduino Powered Chess
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
@@ -56,10 +47,11 @@ notice, you can do whatever you want with this stuff. If we
 meet someday, and you think this stuff is worth it, you can
 buy me a beer in return.
 ```
+
 ## Authors
 
 * **Italo Fernandes** - https://github.com/italogfernandes - italogsfernandes@gmail.com
 
-See also the list of [contributors](https://github.com/italogfernandes/mtp-xadrez-de-bruxo/contributors) who participated in this project.
+* **Julia Nepomuceno** - Co-autora do projeto detector de contrações em C#.
 
-[https://github.com/italogfernandes/mtp-xadrez-de-bruxo](https://github.com/italogfernandes/mtp-xadrez-de-bruxo)
+See also the list of [contributors](https://github.com/italogfernandes/str-contraction-detector/contributors) who participated in this project.
