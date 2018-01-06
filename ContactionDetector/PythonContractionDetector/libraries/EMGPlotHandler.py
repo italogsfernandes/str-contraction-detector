@@ -10,8 +10,10 @@
 # ------------------------------------------------------------------------------
 # Description:
 # ------------------------------------------------------------------------------
+# import sys
+# sys.path.append('../libraries')
 import pyqtgraph as pg
-from libraries.PyQtGraphHandler import PyQtGraphHandler, PyQtGraphSeries
+from PyQtGraphHandler import PyQtGraphHandler, PyQtGraphSeries
 # ------------------------------------------------------------------------------
 # Processing:
 import numpy as np
@@ -73,15 +75,12 @@ class EMGPlotHandler(PyQtGraphHandler):
         self.detection_sites = self.envoltoria.values > self.threshold.values[0]
 
         time_inicio = self.qnt_points - 1
-        time_end = 0
         for n in range(1, self.qnt_points):
             #subida
             if self.detection_sites[n] and not self.detection_sites[n-1]:
                 time_inicio = n # Armazena o indes de inicio da contracao
-                time_end = self.qnt_points - 1 # E reseta o index de termino
             if not self.detection_sites[n] and self.detection_sites[n - 1]:
                 time_end = n
-                # lr = pg.LinearRegionItem([time_inicio, time_end], movable=False)
                 self.contraction_region.setRegion([time_inicio, time_end])
 
 
@@ -109,7 +108,7 @@ def test():
         emg_bruto = np.sin(2*np.pi*y_value)+0.4*np.sin(20*2*np.pi*y_value)
         plot_handler.emg_bruto.buffer.put(emg_bruto+1)
 
-    from libraries.ThreadHandler import InfiniteTimer
+    from ThreadHandler import InfiniteTimer
     timer = InfiniteTimer(0.001, generate_point)
     timer.start()
 

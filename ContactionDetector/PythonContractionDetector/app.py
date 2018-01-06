@@ -11,12 +11,18 @@
 # Decription:
 # ------------------------------------------------------------------------------
 import sys
+
 # PyQt5
-from PyQt5.QtWidgets import *
-from views import base_qt5 as base
+# from PyQt5.QtWidgets import *
+# from views import base_qt5 as base
 # PyQt4
-# from PyQt4.QtGui import *
-# from views import base_qt4 as base
+from PyQt4.QtGui import *
+
+from libraries.QtArduinoPlotter import QtArduinoPlotter
+from libraries.QtArduinoPlotter import ArduinoEMGPlotter
+from views import base_qt4 as base
+
+
 # ------------------------------------------------------------------------------
 
 
@@ -26,14 +32,26 @@ class ContractionDetector(QMainWindow, base.Ui_MainWindow):
         self.setupUi(self)
         self.setup_signals_connections()
 
+        self.emg_app = ArduinoEM(parent=self.centralwidget)
+        self.verticalLayoutGraph.addWidget(self.emg_app.plotHandler.plotWidget)
+
+        self.verticalLayoutGraph.removeWidget(self.label_replace)
+        self.label_replace.setParent(None)
+
     def setup_signals_connections(self):
         self.btn_start.clicked.connect(self.btn_start_clicked)
         self.btn_calib.clicked.connect(self.btn_calib_clicked)
-        self.sl_threshould.valueChanged.connect(lambda x: print(x))
-        self.cb_emg.toggled.connect(lambda x: print(x))
+        # self.sl_threshould.valueChanged.connect()
+        self.cb_emg.toggled.connect(self.cb_emg_toggled)
+
+    def cb_emg_toggled(self, cb_state):
+        self.emg_app.emg_bruto.visible = cb_state
 
     def btn_start_clicked(self):
-        print('start clicked')
+        if self.emg_app.started:
+            self.emg_app.stop()
+        else:
+            self.emg_app.start()
 
     def btn_calib_clicked(self):
         print('calib clicked')

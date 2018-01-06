@@ -16,6 +16,7 @@ from threading import Thread
 from threading import Event
 # ------------------------------------------------------------------------------
 
+
 class ThreadHandler:
     def __init__(self, worker=None, on_end_function=None):
         self.thread = Thread(target=self.run)

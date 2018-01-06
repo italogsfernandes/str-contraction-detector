@@ -10,14 +10,18 @@
 # ------------------------------------------------------------------------------
 # Description:
 # ------------------------------------------------------------------------------
-from libraries.ThreadHandler import InfiniteTimer
-from queue import Queue
-
 from pyqtgraph.Qt import QtCore
 import pyqtgraph as pg
 from pyqtgraph.ptime import time
 from PyQt4.QtGui import QBrush, QColor, QPen
 from numpy import clip
+
+import sys
+if sys.version_info.major == 2:
+    from Queue import Queue
+else:
+    from queue import Queue
+
 # ------------------------------------------------------------------------------
 
 
@@ -37,15 +41,16 @@ class PyQtGraphSeries:
                 self.values.append(num)
                 if len(self.values) > self.parent.qnt_points:
                     self.values.pop(0)
-            self.curve.setData(self.values)
+        self.curve.setData(self.values if self.visible else [])
 
     def get_buffers_status(self):
         return "Plot: %4d" % (self.buffer.qsize()) + '/' + str(self.buffer.maxsize)
 
 
 class PyQtGraphHandler:
-    def __init__(self, qnt_points=10, parent=None, y_range=(-1, 1)):
-        self.y_range = y_range
+    def __init__(self, qnt_points=10, parent=None, y_range=(-1, 1), app=None):
+        self.app = app
+        self.__y_range = y_range
         self.qnt_points = qnt_points
 
         self.plotWidget = pg.PlotWidget(parent)
@@ -65,6 +70,9 @@ class PyQtGraphHandler:
         if self.show_fps:
             self.calculate_fps()
             self.plotWidget.setTitle('<font color="red">%0.2f fps</font>' % self.fps)
+
+        if self.app is not None:
+            self.app.processEvents()
 
     def calculate_fps(self):
         now = time()
@@ -90,7 +98,7 @@ class PyQtGraphHandler:
         self.plotWidget.getAxis('bottom').setPen(QPen(QColor.fromRgb(0, 0, 0)))
         # Axis:
         self.plotWidget.setXRange(0, self.qnt_points)
-        self.plotWidget.setYRange(self.y_range[0], self.y_range[1])
+        self.plotWidget.setYRange(self.__y_range[0], self.__y_range[1])
         self.plotWidget.setLabel('bottom', x_title, units=x_unit)
         self.plotWidget.setLabel('left', y_title, units=y_unit)
 
@@ -119,6 +127,7 @@ def test():
         y_value = agr.microsecond / 1000000.0
         plot_handler.series.buffer.put(np.sin(2 * np.pi * y_value))
 
+    from ThreadHandler import InfiniteTimer
     timer = InfiniteTimer(0.001, generate_point)
     timer.start()
 

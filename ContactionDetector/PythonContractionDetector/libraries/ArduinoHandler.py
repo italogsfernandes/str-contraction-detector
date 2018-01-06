@@ -13,8 +13,13 @@
 import serial
 import serial.tools.list_ports as serial_tools
 from ctypes import c_short
-from libraries.ThreadHandler import ThreadHandler, InfiniteTimer
-from queue import Queue
+# from libraries.ThreadHandler import ThreadHandler, InfiniteTimer
+from ThreadHandler import ThreadHandler, InfiniteTimer
+import sys
+if sys.version_info.major == 2:
+    from Queue import Queue
+else:
+    from queue import Queue
 # ------------------------------------------------------------------------------
 
 
@@ -59,8 +64,8 @@ class ArduinoHandler():
             self.serialPort.close()
 
     def start_acquisition(self):
-        self.open()
         self.thread_acquisition.start()
+        self.open()
 
     def stop_acquisition(self):
         self.thread_acquisition.stop()
@@ -83,14 +88,14 @@ class ArduinoHandler():
     def acquire_routine(self):
         if self.serialPort.isOpen():
             if self.serialPort.inWaiting() > ArduinoConstants.PACKET_SIZE:
-                _starter_byte = self.serialPort.read()
-                if _starter_byte == ArduinoConstants.PACKET_START:
+                _starter_byte = ord(self.serialPort.read())
+                if chr(_starter_byte) == ArduinoConstants.PACKET_START:
                     _msb = self.serialPort.read()
                     _lsb = self.serialPort.read()
                     _msb = ord(_msb)
                     _lsb = ord(_lsb)
-                    _end_byte = self.serialPort.read()
-                    if _end_byte == ArduinoConstants.PACKET_END:
+                    _end_byte = ord(self.serialPort.read())
+                    if chr(_end_byte) == ArduinoConstants.PACKET_END:
                         self.buffer_acquisition.put(ArduinoHandler.to_int16(_msb, _lsb))
 
     def __str__(self):
@@ -107,7 +112,7 @@ class ArduinoHandler():
                separator + "Acq: %4d" % (self.buffer_acquisition.qsize()) + '/' + str(self.buffer_acquisition.maxsize)
 
 if __name__ == '__main__':
-    myArduinoHandler = ArduinoHandler()
+    myArduinoHandler = ArduinoHandler(port_name='/dev/ttyACM0')
 
     def printer():
         if myArduinoHandler.data_waiting():
