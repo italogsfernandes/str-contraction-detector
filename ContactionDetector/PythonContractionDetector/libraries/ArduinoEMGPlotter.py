@@ -18,7 +18,6 @@ from ThreadHandler import ThreadHandler, InfiniteTimer
 from EMGPlotHandler import EMGPlotHandler
 from QtArduinoPlotter import QtArduinoPlotter
 
-
 # ------------------------------------------------------------------------------
 
 

@@ -34,8 +34,8 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 
 
 class EMGPlotHandler(PyQtGraphHandler):
-    def __init__(self, qnt_points=2000, parent=None, y_range=(-1, 1)):
-        PyQtGraphHandler.__init__(self, qnt_points, parent, y_range)
+    def __init__(self, qnt_points=2000, parent=None, y_range=(-1, 1), app=None):
+        PyQtGraphHandler.__init__(self, qnt_points, parent, y_range, app)
 
         self.emg_bruto = PyQtGraphSeries(self, pen=(0, 0, 255), name="EMG Bruto")
         self.hilbert = PyQtGraphSeries(self, pen=(90, 200, 90), name="Hilbert")

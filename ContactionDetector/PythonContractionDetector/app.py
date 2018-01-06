@@ -19,7 +19,7 @@ import sys
 from PyQt4.QtGui import *
 
 from libraries.QtArduinoPlotter import QtArduinoPlotter
-from libraries.QtArduinoPlotter import ArduinoEMGPlotter
+from libraries.ArduinoEMGPlotter import ArduinoEMGPlotter
 from views import base_qt4 as base
 
 
@@ -32,7 +32,7 @@ class ContractionDetector(QMainWindow, base.Ui_MainWindow):
         self.setupUi(self)
         self.setup_signals_connections()
 
-        self.emg_app = ArduinoEM(parent=self.centralwidget)
+        self.emg_app = ArduinoEMGPlotter(parent=self.centralwidget)
         self.verticalLayoutGraph.addWidget(self.emg_app.plotHandler.plotWidget)
 
         self.verticalLayoutGraph.removeWidget(self.label_replace)
