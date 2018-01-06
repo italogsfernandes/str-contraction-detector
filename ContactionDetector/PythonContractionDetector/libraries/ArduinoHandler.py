@@ -10,14 +10,12 @@
 # ------------------------------------------------------------------------------
 # Decription:
 # ------------------------------------------------------------------------------
-
 import serial
 import serial.tools.list_ports as serial_tools
 from ctypes import c_short
-
-from ThreadHandler import ThreadHandler, InfiniteTimer
-from CircularQueue import CircularQueue
-from Queue import Queue
+from libraries.ThreadHandler import ThreadHandler, InfiniteTimer
+from queue import Queue
+# ------------------------------------------------------------------------------
 
 
 class ArduinoConstants():
@@ -113,47 +111,47 @@ if __name__ == '__main__':
 
     def printer():
         if myArduinoHandler.data_waiting():
-            print myArduinoHandler.buffer_acquisition.get()
+            print(myArduinoHandler.buffer_acquisition.get())
             # time.sleep(0.01) # Uncomment if you want to see the buffer_acquisition to get full
 
 
-    from datetime import datetime
-    horario = datetime.now()
-    arq = open("leituras-" + str(horario) + '-dados.txt', 'w')
-    arq.write("Leituras salvas com Arduino Handler - Datetime: " + str(horario) + "\n")
-    arq.write("leituras = [")
+    # from datetime import datetime
+    # horario = datetime.now()
+    # arq = open("leituras-" + str(horario) + '-dados.txt', 'w')
+    # arq.write("Leituras salvas com Arduino Handler - Datetime: " + str(horario) + "\n")
+    # arq.write("leituras = [")
 
     def saver():
         if myArduinoHandler.data_waiting():
             arq.write(str(myArduinoHandler.buffer_acquisition.get()))
             arq.write(', ')
 
-    consumer_thr = ThreadHandler(saver)
+    consumer_thr = ThreadHandler(printer)
 
     def show_status():
-        print myArduinoHandler
+        print(myArduinoHandler)
     status_timer = InfiniteTimer(0.5, show_status)
     while True:
-        print '-------------------------------'
-        print myArduinoHandler
-        print '-------------------------------'
-        print 'Menu'
-        print '-------------------------------'
-        print 'start - Automatically Starts Everything'
-        print 'stop - Automatically Stops Everything'
-        print 'q - Quit'
-        print '-------------------------------'
-        print 'op - open() '
-        print 'cl - close()'
-        print 'ra - readall()'
-        print 'sth - start Consumer'
-        print 'pth - pause Consumer'
-        print 'rth - resume Consumer'
-        print 'kth - kill Consumer'
-        print 'sacq - start Aquisition'
-        print 'kacq - kill Aquisition'
-        print '-------------------------------'
-        str_key = raw_input()
+        print('-------------------------------')
+        print(myArduinoHandler)
+        print('-------------------------------')
+        print('Menu')
+        print('-------------------------------')
+        print('start - Automatically Starts Everything')
+        print('stop - Automatically Stops Everything')
+        print('q - Quit')
+        print('-------------------------------')
+        print('op - open() ')
+        print('cl - close()')
+        print('ra - readall()')
+        print('sth - start Consumer')
+        print('pth - pause Consumer')
+        print('rth - resume Consumer')
+        print('kth - kill Consumer')
+        print('sacq - start Aquisition')
+        print('kacq - kill Aquisition')
+        print('-------------------------------')
+        str_key = input()
         if 'q' in str_key:
             myArduinoHandler.stop_acquisition()
             consumer_thr.stop()
@@ -164,7 +162,7 @@ if __name__ == '__main__':
         elif 'cl' in str_key:
             myArduinoHandler.close()
         elif 'ra' in str_key:
-            print myArduinoHandler.serialPort.read_all()
+            print(myArduinoHandler.serialPort.read_all())
         elif 'sth' in str_key:
             status_timer.start()
             consumer_thr.start()
