@@ -125,7 +125,11 @@ if __name__ == '__main__':              # if we're running file directly and not
         print('-------------------------------')
         print('q - Quit')
         print('-------------------------------')
-        str_key = input()
+        import sys
+        if sys.version_info.major == 2:
+            str_key = raw_input()
+        else:
+            str_key = input()
         if str_key == 'q':
             myThreadHandler.stop()
             myInfiniteTimer.stop()
