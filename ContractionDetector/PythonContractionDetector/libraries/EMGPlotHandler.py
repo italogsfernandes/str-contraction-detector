@@ -36,7 +36,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 class EMGPlotHandler(PyQtGraphHandler):
     def __init__(self, qnt_points=2000, parent=None, y_range=(-1, 1), app=None):
         PyQtGraphHandler.__init__(self, qnt_points, parent, y_range, app)
-
+        self.plotWidget.removeItem(self.series.curve)
         self.emg_bruto = PyQtGraphSeries(self, pen=(0, 0, 255), name="EMG Bruto")
         self.hilbert = PyQtGraphSeries(self, pen=(90, 200, 90), name="Hilbert")
         self.hilbert_retificado = PyQtGraphSeries(self, pen=(30, 100, 10), name="Hilbert Retificado")
@@ -54,10 +54,16 @@ class EMGPlotHandler(PyQtGraphHandler):
         # Processing:
         self.detection_sites = []
         self.b, self.a = butter_lowpass(7, 1000, order=2)
-        
+
+    def set_detection_visible(self, visible):
+        if not visible:
+            self.plotWidget.removeItem(self.contraction_region)
+        else:
+            self.plotWidget.addItem(self.contraction_region)
+
     def set_threshold(self, th_value):
         self.threshold.values = [th_value] * self.qnt_points
-	
+
     def update(self):
         self.emg_bruto.update_values()
         if self.process_in_plotter:

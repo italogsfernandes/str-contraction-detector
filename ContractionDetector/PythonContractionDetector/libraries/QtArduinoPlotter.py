@@ -20,27 +20,32 @@ from EMGPlotHandler import EMGPlotHandler
 
 
 class QtArduinoPlotter:
-    def __init__(self, parent, app=None):
-    	self.plotHandler = None
-    	self._init_plotHandler(parent, app)
+    def __init__(self, parent, app=None, label=None):
+        self.plotHandler = None
+        self.label = label
+        self._init_plotHandler(parent, app)
         self.arduinoHandler = ArduinoHandler()
         self.consumerThread = ThreadHandler(self.consumer_function)
         self.timerStatus = InfiniteTimer(0.05, self.print_buffers_status)
         self.started = False
     
     def _init_plotHandler(self, parent, app):
-		self.plotHandler = PyQtGraphHandler(qnt_points=5000, parent=parent, y_range=(0, 5), app=app)
-        
-		
+        self.plotHandler = PyQtGraphHandler(qnt_points=5000, parent=parent, y_range=(0, 5), app=app)
+
     def consumer_function(self):
         if self.arduinoHandler.data_waiting():
             self.plotHandler.series.buffer.put(self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0)
 
     def get_buffers_status(self, separator):
-        return self.arduinoHandler.get_buffers_status(separator) + separator + self.plotHandler.series.get_buffers_status()
+        return self.arduinoHandler.get_buffers_status(separator) + separator +\
+               self.plotHandler.series.get_buffers_status()
 
     def print_buffers_status(self):
-        print(self.get_buffers_status(" - "))
+        if self.label is None:
+            print(self.get_buffers_status(" - "))
+        else:
+            self.label.setText(self.arduinoHandler.serial_tools_obj.description +
+                               "\tBuffers: " + self.get_buffers_status(" - "))
 
     def start(self):
         self.started = True

@@ -22,22 +22,26 @@ from QtArduinoPlotter import QtArduinoPlotter
 
 
 class ArduinoEMGPlotter(QtArduinoPlotter):
-    def __init__(self, parent, app=None):
-    	QtArduinoPlotter.__init__(self, parent, app)
-    	self.plotHandler.process_in_plotter = True
-        self.plotHandler.emg_bruto.visible = False
-        self.plotHandler.hilbert.visible = False
-        self.plotHandler.hilbert_retificado.visible = False
-        self.plotHandler.envoltoria.visible = True
-        self.plotHandler.threshold.visible = True
+    def __init__(self, parent, app=None, label=None):
+        QtArduinoPlotter.__init__(self, parent, app, label)
+        self.plotHandler.process_in_plotter = True
+        self.plotHandler.emg_bruto.set_visible(True)
+        self.plotHandler.hilbert.set_visible(False)
+        self.plotHandler.hilbert_retificado.set_visible(False)
+        self.plotHandler.envoltoria.set_visible(False)
+        self.plotHandler.threshold.set_visible(False)
+        self.plotHandler.set_detection_visible(False)
+
+    def get_buffers_status(self, separator):
+        return self.arduinoHandler.get_buffers_status(separator) + separator + \
+               self.plotHandler.emg_bruto.get_buffers_status()
 
     def _init_plotHandler(self, parent, app):
-       self.plotHandler = EMGPlotHandler(qnt_points=5000, parent=parent, y_range=(-2.5, 2.5), app=app)
-        			
+        self.plotHandler = EMGPlotHandler(qnt_points=5000, parent=parent, y_range=(-2.5, 2.5), app=app)
+
     def consumer_function(self):
         if self.arduinoHandler.data_waiting():
             self.plotHandler.emg_bruto.buffer.put(self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0 - 2.5)
-
 
 
 def test():

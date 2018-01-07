@@ -33,6 +33,13 @@ class PyQtGraphSeries:
         self.visible = True
         self.buffer = Queue(self.parent.qnt_points)
 
+    def set_visible(self, visible):
+        self.visible = visible
+        if not self.visible:
+            self.parent.plotWidget.removeItem(self.curve)
+        else:
+            self.parent.plotWidget.addItem(self.curve)
+
     def update_values(self):
         points_to_add = self.buffer.qsize()
         if points_to_add > 0:
@@ -41,7 +48,8 @@ class PyQtGraphSeries:
                 self.values.append(num)
                 if len(self.values) > self.parent.qnt_points:
                     self.values.pop(0)
-        self.curve.setData(self.values if self.visible else [])
+        if self.visible:
+            self.curve.setData(self.values)
 
     def get_buffers_status(self):
         return "Plot: %4d" % (self.buffer.qsize()) + '/' + str(self.buffer.maxsize)
