@@ -15,17 +15,23 @@
 from ThreadHandler import ThreadHandler, InfiniteTimer
 from ArduinoHandler import ArduinoHandler
 from PyQtGraphHandler import PyQtGraphHandler
+from EMGPlotHandler import EMGPlotHandler
 # ------------------------------------------------------------------------------
 
 
 class QtArduinoPlotter:
     def __init__(self, parent, app=None):
-        self.plotHandler = PyQtGraphHandler(qnt_points=5000, parent=parent, y_range=(0, 5), app=app)
+    	self.plotHandler = None
+    	self._init_plotHandler(parent, app)
         self.arduinoHandler = ArduinoHandler()
         self.consumerThread = ThreadHandler(self.consumer_function)
         self.timerStatus = InfiniteTimer(0.05, self.print_buffers_status)
         self.started = False
-
+    
+    def _init_plotHandler(self, parent, app):
+		self.plotHandler = PyQtGraphHandler(qnt_points=5000, parent=parent, y_range=(0, 5), app=app)
+        
+		
     def consumer_function(self):
         if self.arduinoHandler.data_waiting():
             self.plotHandler.series.buffer.put(self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0)

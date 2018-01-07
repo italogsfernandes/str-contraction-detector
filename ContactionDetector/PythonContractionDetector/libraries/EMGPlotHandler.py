@@ -43,10 +43,10 @@ class EMGPlotHandler(PyQtGraphHandler):
         self.envoltoria = PyQtGraphSeries(self, pen=(255, 0, 0), name="Envoltoria")
         self.threshold = PyQtGraphSeries(self, pen=(255, 150, 0), name="Limiar")
         # TODO: method
-        self.threshold.values = [0.5] * self.qnt_points
+        self.set_threshold(2.5)
 
         self.contraction_region = pg.LinearRegionItem([0, 1], movable=False)
-        self.contraction_region.setZValue(-10)
+        self.contraction_region.setZValue(10)
         self.plotWidget.addItem(self.contraction_region)
 
         # TODO: thread
@@ -54,7 +54,10 @@ class EMGPlotHandler(PyQtGraphHandler):
         # Processing:
         self.detection_sites = []
         self.b, self.a = butter_lowpass(7, 1000, order=2)
-
+        
+    def set_threshold(self, th_value):
+        self.threshold.values = [th_value] * self.qnt_points
+	
     def update(self):
         self.emg_bruto.update_values()
         if self.process_in_plotter:
@@ -93,8 +96,7 @@ def test():
     central_widget = QtGui.QWidget(form)
     vertical_layout = QtGui.QVBoxLayout(central_widget)
 
-    plot_handler = EMGPlotHandler(qnt_points=4096, parent=central_widget, y_range=[-2.5, 2.5])
-    plot_handler.plotWidget.setXRange(0, 4000)
+    plot_handler = EMGPlotHandler(qnt_points=5000, parent=central_widget, y_range=[-2.5, 2.5])
     plot_handler.process_in_plotter = False
     plot_handler.emg_bruto.visible = True
     plot_handler.hilbert.visible = False

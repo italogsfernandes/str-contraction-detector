@@ -23,17 +23,21 @@ from QtArduinoPlotter import QtArduinoPlotter
 
 class ArduinoEMGPlotter(QtArduinoPlotter):
     def __init__(self, parent, app=None):
-        self.plotHandler = EMGPlotHandler(qnt_points=5000, parent=parent, y_range=(0, 5), app=app)
-        self.arduinoHandler = ArduinoHandler()
-        self.consumerThread = ThreadHandler(self.consumer_function)
-        self.timerStatus = InfiniteTimer(0.05, self.print_buffers_status)
-        self.started = False
+    	QtArduinoPlotter.__init__(self, parent, app)
+    	self.plotHandler.process_in_plotter = True
+        self.plotHandler.emg_bruto.visible = False
+        self.plotHandler.hilbert.visible = False
+        self.plotHandler.hilbert_retificado.visible = False
+        self.plotHandler.envoltoria.visible = True
+        self.plotHandler.threshold.visible = True
 
-
+    def _init_plotHandler(self, parent, app):
+       self.plotHandler = EMGPlotHandler(qnt_points=5000, parent=parent, y_range=(-2.5, 2.5), app=app)
+        			
     def consumer_function(self):
         if self.arduinoHandler.data_waiting():
-            self.emg_bruto = self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0
-            self.plotHandler.put(self.emg_bruto - 2.5)
+            self.plotHandler.emg_bruto.buffer.put(self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0 - 2.5)
+
 
 
 def test():

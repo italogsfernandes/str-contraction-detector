@@ -64,8 +64,8 @@ class ArduinoHandler():
             self.serialPort.close()
 
     def start_acquisition(self):
-        self.thread_acquisition.start()
         self.open()
+        self.thread_acquisition.start()
 
     def stop_acquisition(self):
         self.thread_acquisition.stop()
@@ -88,14 +88,14 @@ class ArduinoHandler():
     def acquire_routine(self):
         if self.serialPort.isOpen():
             if self.serialPort.inWaiting() > ArduinoConstants.PACKET_SIZE:
-                _starter_byte = ord(self.serialPort.read())
-                if chr(_starter_byte) == ArduinoConstants.PACKET_START:
+                _starter_byte = self.serialPort.read()
+                if chr(ord(_starter_byte)) == ArduinoConstants.PACKET_START:
                     _msb = self.serialPort.read()
                     _lsb = self.serialPort.read()
                     _msb = ord(_msb)
                     _lsb = ord(_lsb)
-                    _end_byte = ord(self.serialPort.read())
-                    if chr(_end_byte) == ArduinoConstants.PACKET_END:
+                    _end_byte = self.serialPort.read()
+                    if chr(ord(_end_byte)) == ArduinoConstants.PACKET_END:
                         self.buffer_acquisition.put(ArduinoHandler.to_int16(_msb, _lsb))
 
     def __str__(self):
@@ -156,7 +156,12 @@ if __name__ == '__main__':
         print('sacq - start Aquisition')
         print('kacq - kill Aquisition')
         print('-------------------------------')
-        str_key = input()
+        
+        if sys.version_info.major == 2:
+            str_key = raw_input()
+        else:
+            str_key = input()
+       
         if 'q' in str_key:
             myArduinoHandler.stop_acquisition()
             consumer_thr.stop()
