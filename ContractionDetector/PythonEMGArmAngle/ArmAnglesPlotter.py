@@ -16,7 +16,7 @@ from libraries.ArduinoHandler import ArduinoHandler
 from libraries.ThreadHandler import ThreadHandler, InfiniteTimer
 from libraries.PyQtGraphHandler import PyQtGraphHandler
 from libraries.QtArduinoPlotter import QtArduinoPlotter
-
+from ArmGraph import ArmGraph
 # ------------------------------------------------------------------------------
 
 import numpy as np
@@ -30,12 +30,27 @@ else:
 # from collections import deque
 
 
+class ArmAnglesProcessing:
+    def __init__(self):
+        self.regressor = None
+
+    def get_angle(self, x):
+        # self.regressor.predict(x)
+        if self.regressor is None:
+            return x[0] * 10
+        else:
+            return 3
+
+
 class ArmAnglesPlotter(QtArduinoPlotter):
     def __init__(self, parent, app=None, label=None):
         QtArduinoPlotter.__init__(self, parent, app, label)
         self.arduinoHandler.qnt_ch = 2
-        self.biceps_plotHandler = PyQtGraphHandler(qnt_points=500, parent=parent, y_range=(0, 5), app=app)
-        self.triceps_plotHandler = PyQtGraphHandler(qnt_points=500, parent=parent, y_range=(0, 5), app=app)
+        self.biceps_plotHandler = PyQtGraphHandler(qnt_points=300, parent=parent, y_range=(0, 5), app=app)
+        self.triceps_plotHandler = PyQtGraphHandler(qnt_points=300, parent=parent, y_range=(0, 5), app=app)
+        self.angles_plotHandler = PyQtGraphHandler(qnt_points=300, parent=parent, y_range=(0, 180), app=app)
+        self.arm_plot = ArmGraph(parent=parent)
+        self.processer = ArmAnglesProcessing()
 
     def get_buffers_status(self, separator):
         return self.arduinoHandler.get_buffers_status(separator) + separator + \
@@ -46,7 +61,10 @@ class ArmAnglesPlotter(QtArduinoPlotter):
 
     def consumer_function(self):
         if self.arduinoHandler.data_waiting():
-            arduino_value = np.array(self.arduinoHandler.buffer_acquisition.get()) * 5.0 / 1024.0 - 2.5
+            arduino_value = np.array(self.arduinoHandler.buffer_acquisition.get()) * 5.0 / 1024.0
+            angle = self.processer.get_angle(arduino_value)
+            self.arm_plot.arm.set_angle(angle)
+            self.angles_plotHandler.series.buffer.put(angle)
             self.biceps_plotHandler.series.buffer.put(arduino_value[0])
             self.triceps_plotHandler.series.buffer.put(arduino_value[1])
 
@@ -55,6 +73,8 @@ class ArmAnglesPlotter(QtArduinoPlotter):
         self.timerStatus.start()
         self.biceps_plotHandler.timer.start(0)
         self.triceps_plotHandler.timer.start(0)
+        self.angles_plotHandler.timer.start(0)
+        self.arm_plot.timer.start(100)
         self.consumerThread.start()
         self.arduinoHandler.start_acquisition()
 
@@ -65,24 +85,12 @@ class ArmAnglesPlotter(QtArduinoPlotter):
         self.timerStatus.stop()
         self.biceps_plotHandler.timer.stop()
         self.triceps_plotHandler.timer.stop()
+        self.angles_plotHandler.timer.stop()
+        self.arm_plot.timer.stop()
+
 
 def test():
-    import sys
-    from PyQt4 import QtGui
-    app = QtGui.QApplication(sys.argv)
-    form = QtGui.QMainWindow()
-    form.resize(800, 600)
-    central_widget = QtGui.QWidget(form)
-    vertical_layout = QtGui.QVBoxLayout(central_widget)
-
-    harry_plotter = ArduinoEMGPlotter(parent=central_widget)#, app=app)
-    harry_plotter.start()
-
-    vertical_layout.addWidget(harry_plotter.plotHandler.plotWidget)
-    form.setCentralWidget(central_widget)
-    form.show()
-    app.exec_()
-    harry_plotter.stop()
+    pass
 
 if __name__ == '__main__':
     test()

@@ -35,6 +35,8 @@ class EMGArmAngles(QMainWindow, base.Ui_MainWindow):
         self.arm_angle_app = ArmAnglesPlotter(parent=self.centralwidget, label=self.lbl_status)
         self.verticalLayoutChart1.addWidget(self.arm_angle_app.biceps_plotHandler.plotWidget)
         self.verticalLayoutChart2.addWidget(self.arm_angle_app.triceps_plotHandler.plotWidget)
+        self.verticalLayoutChart3.addWidget(self.arm_angle_app.angles_plotHandler.plotWidget)
+        self.verticalLayoutChart4.addWidget(self.arm_angle_app.arm_plot.plotWidget)
 
         self.arm_angle_app.start()
         #self.cb_emg.toggle()
