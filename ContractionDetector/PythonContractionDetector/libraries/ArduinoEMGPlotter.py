@@ -59,10 +59,14 @@ class EMGProcessing:
             self.do_process()
 
     def do_process(self):
-        self.hilbert = fftpack.hilbert(self.emg_bruto)#+self.emg_bruto[::-1])
+        #self.hilbert = fftpack.hilbert(self.emg_bruto)#+self.emg_bruto[::-1])
+        self.hilbert = self.emg_bruto - EMGProcessing.do_moving_average(self.emg_bruto, 5) #+self.emg_bruto[::-1])
         self.hilbert_retificado = np.abs(self.hilbert)
 
-        self.envoltoria = filtfilt(self.filter_params['b'], self.filter_params['a'], self.hilbert_retificado)
+        #self.envoltoria = \
+        #   filtfilt(self.filter_params['b'], self.filter_params['a'], self.hilbert_retificado)
+        self.envoltoria = \
+            EMGProcessing.do_moving_average(self.hilbert_retificado, 128)*3.8
         # self.envoltoria = EMGProcessing.do_moving_average(self.hilbert_retificado,100)
         self.detection_sites = self.envoltoria > self.threshold
 
@@ -75,7 +79,7 @@ class EMGProcessing:
     @staticmethod
     def do_moving_average(values, window):
         weights = np.repeat(1.0, window) / window
-        sma = np.convolve(values, weights, 'valid')
+        sma = np.convolve(values, weights, 'same')
         return sma
 
     @staticmethod
@@ -90,7 +94,6 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
     def __init__(self, parent, app=None, label=None):
         QtArduinoPlotter.__init__(self, parent, app, label)
         self.process = EMGProcessing()
-        self.plotHandler.process_in_plotter = True
         self.plotHandler.emg_bruto.set_visible(True)
         self.plotHandler.hilbert.set_visible(False)
         self.plotHandler.hilbert_retificado.set_visible(False)
@@ -99,18 +102,45 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
         self.plotHandler.set_detection_visible(False)
         self.emg_value = 0
 
+        self.as_simple_as_possible = True
+        #self.offset_values = np.zeros(128)
+        self.offset_values = [0] * 1000
+        #self.mva_values = np.zeros(128)
+        self.mva_values = [0] * 128
+
     def get_buffers_status(self, separator):
         return self.arduinoHandler.get_buffers_status(separator) + separator + \
                self.plotHandler.emg_bruto.get_buffers_status()
 
     def _init_plotHandler(self, parent, app):
-        self.plotHandler = EMGPlotHandler(qnt_points=4096, parent=parent, y_range=(-2.5, 2.5), app=app)
+        self.plotHandler = EMGPlotHandler(qnt_points=4096, parent=parent, y_range=(-2.5, 2.5),
+                                          app=app, proc=None)
 
     def consumer_function(self):
         if self.plotHandler.process_in_plotter:
             if self.arduinoHandler.data_waiting():
                 self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
                 self.plotHandler.emg_bruto.buffer.put(self.emg_value)
+        elif self.as_simple_as_possible:
+            if self.arduinoHandler.data_waiting():
+                self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
+                #self.offset_values = np.roll(self.offset_values, -1)
+                #self.offset_values[:-1] = self.offset_values[1:]
+                #self.offset_values[-1] = self.emg_value
+                self.offset_values.pop(0)
+                self.offset_values.append(self.emg_value)
+                hbt = self.emg_value - sum(self.offset_values)/len(self.offset_values)
+                hbt_ret = abs(hbt)
+                #self.mva_values = np.roll(self.mva_values,-1)
+                #self.mva_values[:-1] = self.mva_values[1:]
+                #self.mva_values[-1] = hbt_ret
+                self.mva_values.pop(0)
+                self.mva_values.append(abs(hbt))
+                env = sum(self.mva_values)/len(self.mva_values)
+                self.plotHandler.emg_bruto.buffer.put(self.emg_value)
+                self.plotHandler.hilbert.buffer.put(hbt)
+                self.plotHandler.hilbert_retificado.buffer.put(hbt_ret)
+                self.plotHandler.envoltoria.buffer.put(env*3.83)
         else:
             if self.arduinoHandler.data_waiting():
                 points_to_process = self.arduinoHandler.buffer_acquisition.qsize()
@@ -120,7 +150,7 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
                 self.process.update_values()
                 self.process.do_process()
                 for n in range(points_to_process):
-                    index_out = self.process.window_size - points_to_process + n - 100
+                    index_out = self.process.window_size - points_to_process + n
                     self.plotHandler.emg_bruto.buffer.put(self.process.emg_bruto[index_out])
                     self.plotHandler.hilbert.buffer.put(self.process.hilbert[index_out])
                     self.plotHandler.hilbert_retificado.buffer.put(self.process.hilbert_retificado[index_out])
@@ -136,7 +166,7 @@ def test():
     central_widget = QtGui.QWidget(form)
     vertical_layout = QtGui.QVBoxLayout(central_widget)
 
-    harry_plotter = ArduinoEMGPlotter(parent=central_widget)# , app=app)
+    harry_plotter = ArduinoEMGPlotter(parent=central_widget)#, app=app)
     harry_plotter.start()
 
     vertical_layout.addWidget(harry_plotter.plotHandler.plotWidget)

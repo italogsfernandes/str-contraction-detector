@@ -34,26 +34,34 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 
 
 class EMGPlotHandler(PyQtGraphHandler):
-    def __init__(self, qnt_points=2000, parent=None, y_range=(-1, 1), app=None):
+    def __init__(self, qnt_points=2000, parent=None, y_range=(-1, 1), app=None, proc=None):
         PyQtGraphHandler.__init__(self, qnt_points, parent, y_range, app)
+
         self.plotWidget.removeItem(self.series.curve)
         self.emg_bruto = PyQtGraphSeries(self, pen=(0, 0, 255), name="EMG Bruto")
         self.hilbert = PyQtGraphSeries(self, pen=(90, 200, 90), name="Hilbert")
         self.hilbert_retificado = PyQtGraphSeries(self, pen=(30, 100, 10), name="Hilbert Retificado")
         self.envoltoria = PyQtGraphSeries(self, pen=(255, 0, 0), name="Envoltoria")
         self.threshold = PyQtGraphSeries(self, pen=(255, 150, 0), name="Limiar")
-        # TODO: method
+
         self.set_threshold(2.5)
 
         self.contraction_region = pg.LinearRegionItem([0, 1], movable=False)
         self.contraction_region.setZValue(10)
         self.plotWidget.addItem(self.contraction_region)
 
-        # TODO: thread
-        self.process_in_plotter = True
-        # Processing:
-        self.detection_sites = []
-        self.b, self.a = butter_lowpass(7, 1000, order=2)
+        self.proc = proc
+        if self.proc is not None:
+            self.process_in_plotter = True
+        else:
+            self.process_in_plotter = False
+
+        if self.proc == "hbt+btr": # Hilbert + butterworth
+            # Processing:
+            self.detection_sites = []
+            self.b, self.a = butter_lowpass(7, 1000, order=2)
+        if self.proc == "mva": #Only moving average
+            pass
 
     def set_detection_visible(self, visible):
         if not visible:
@@ -78,9 +86,12 @@ class EMGPlotHandler(PyQtGraphHandler):
             self.plotWidget.setTitle('<font color="red">%0.2f fps</font>' % self.fps)
 
     def process_data(self):
-        self.hilbert.values = fftpack.hilbert(self.emg_bruto.values)
-        self.hilbert_retificado.values = np.abs(self.hilbert.values)
-        self.envoltoria.values = filtfilt(self.b, self.a, self.hilbert_retificado.values)
+        if self.proc == 'hbt+btr':
+            self.hilbert.values = fftpack.hilbert(self.emg_bruto.values)
+            self.hilbert_retificado.values = np.abs(self.hilbert.values)
+            self.envoltoria.values = filtfilt(self.b, self.a, self.hilbert_retificado.values)
+        if self.proc == 'mva':
+            self.hilbert.values = self.emg_bruto
         self.detection_sites = self.envoltoria.values > self.threshold.values[0]
 
         time_inicio = self.qnt_points - 1
