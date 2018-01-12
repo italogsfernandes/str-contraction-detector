@@ -32,6 +32,7 @@ class PyQtGraphSeries:
         self.curve = self.parent.plotWidget.plot(self.values, pen=pen, name=name)
         self.visible = True
         self.buffer = Queue(self.parent.qnt_points)
+        #self.ptr1 = 0
 
     def set_visible(self, visible):
         self.visible = visible
@@ -49,7 +50,9 @@ class PyQtGraphSeries:
                 if len(self.values) > self.parent.qnt_points:
                     self.values.pop(0)
         if self.visible:
+            #self.ptr1 += points_to_add
             self.curve.setData(self.values)
+            #self.curve.setPos(0,self.ptr1)
 
     def get_buffers_status(self):
         return "Plot: %4d" % (self.buffer.qsize()) + '/' + str(self.buffer.maxsize)
@@ -62,6 +65,8 @@ class PyQtGraphHandler:
         self.qnt_points = qnt_points
 
         self.plotWidget = pg.PlotWidget(parent)
+        #self.plotWidget = pg.MultiPlotWidget(parent)
+
         self.series = PyQtGraphSeries(self, (0, 0, 255), "Values")
         self.configure_plot()
 
@@ -71,6 +76,9 @@ class PyQtGraphHandler:
         self.show_fps = True
         self.lastTime = 0
         self.fps = 0
+        # 1) Simplest approach -- update data in the array such that plot appears to scroll
+        # 2) Allow data to accumulate. In these examples, the array doubles in length
+        #    whenever it is full.
 
     def update(self):
         self.series.update_values()
@@ -149,5 +157,97 @@ def test():
     timer.stop()
     plot_handler.timer.stop()
 
+
+def test2():
+    import sys
+    from PyQt4 import QtGui
+    app = QtGui.QApplication(sys.argv)
+    form = QtGui.QMainWindow()
+    form.resize(800, 600)
+    central_widget = QtGui.QWidget(form)
+    vertical_layout = QtGui.QVBoxLayout(central_widget)
+
+    plot_handler = PyQtGraphHandler(qnt_points=5000, parent=central_widget)
+    plot_handler.plotWidget.setYRange(-1, 1)
+
+    plot_handler2 = PyQtGraphHandler(qnt_points=5000, parent=central_widget)
+    plot_handler2.plotWidget.setYRange(-1, 1)
+
+    from datetime import datetime
+    import numpy as np
+
+    def generate_point():
+        agr = datetime.now()
+        y_value = agr.microsecond / 1000000.0
+        plot_handler.series.buffer.put(np.sin(2 * np.pi * y_value))
+        plot_handler2.series.buffer.put(np.sin(2 * np.pi * y_value + np.pi))
+
+    from ThreadHandler import InfiniteTimer
+    timer = InfiniteTimer(0.001, generate_point)
+    timer.start()
+
+    plot_handler.timer.start(0)
+    plot_handler2.timer.start(0)
+
+    vertical_layout.addWidget(plot_handler.plotWidget)
+    vertical_layout.addWidget(plot_handler2.plotWidget)
+    form.setCentralWidget(central_widget)
+    form.show()
+    app.exec_()
+
+    timer.stop()
+    plot_handler.timer.stop()
+    plot_handler2.timer.stop()
+
+
+def test3():
+    import sys
+    from PyQt4 import QtGui
+    app = QtGui.QApplication(sys.argv)
+    form = QtGui.QMainWindow()
+    form.resize(800, 600)
+    central_widget = QtGui.QWidget(form)
+    vertical_layout = QtGui.QVBoxLayout(central_widget)
+
+    plot_handler = PyQtGraphHandler(qnt_points=5000, parent=central_widget)
+    plot_handler.plotWidget.setYRange(-1, 1)
+
+    plot_handler2 = PyQtGraphHandler(qnt_points=5000, parent=central_widget)
+    plot_handler2.plotWidget.setYRange(-1, 1)
+
+    plot_handler3 = PyQtGraphHandler(qnt_points=5000, parent=central_widget)
+    plot_handler3.plotWidget.setYRange(-1, 1)
+
+    from datetime import datetime
+    import numpy as np
+
+    def generate_point():
+        agr = datetime.now()
+        y_value = agr.microsecond / 1000000.0
+        plot_handler.series.buffer.put(np.sin(2 * np.pi * y_value))
+        plot_handler2.series.buffer.put(np.sin(2 * np.pi * y_value + np.pi/3))
+        plot_handler3.series.buffer.put(np.sin(2 * np.pi * y_value + 2*np.pi/3))
+
+    from ThreadHandler import InfiniteTimer
+    timer = InfiniteTimer(0.001, generate_point)
+    timer.start()
+
+    plot_handler.timer.start(0)
+    plot_handler2.timer.start(0)
+    plot_handler3.timer.start(0)
+
+    vertical_layout.addWidget(plot_handler.plotWidget)
+    vertical_layout.addWidget(plot_handler2.plotWidget)
+    vertical_layout.addWidget(plot_handler3.plotWidget)
+    form.setCentralWidget(central_widget)
+    form.show()
+    app.exec_()
+
+    timer.stop()
+    plot_handler.timer.stop()
+    plot_handler2.timer.stop()
+    plot_handler3.timer.stop()
+
+
 if __name__ == '__main__':
-    test()
+    test3()
