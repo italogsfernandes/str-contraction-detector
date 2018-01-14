@@ -32,7 +32,7 @@
 ///////////
 //Timers //
 ///////////
-#define FREQ_AQUIRE          100                   //Frequency in Hz
+#define FREQ_AQUIRE          1000                   //Frequency in Hz
 #define INTERVAL_MS_AQUIRE   1000 / FREQ_AQUIRE     //Interval in milliseconds
 #define INTERVAL_US_AQUIRE   1000000 / FREQ_AQUIRE  //Interval in microseconds
 
@@ -68,7 +68,7 @@ void setup() {
 
   my_generator.setOffset(512);
   my_generator.setAmplitude(512);
-  my_generator.setWaveform(RAMP_WAVE);
+  my_generator.setWaveform(EMG_WAVE);
 
   my_generator_ch2.setOffset(512);
   my_generator_ch2.setAmplitude(512);
@@ -96,15 +96,15 @@ void timerDataAcq() {
   //Sending the value
 #ifdef PLOTTER_SERIAL
   Serial.print(generated_value);
-  Serial.print("\t");
-  Serial.print(generated_value_ch2);
+  //Serial.print("\t");
+  //Serial.print(generated_value_ch2);
   Serial.println();
 #else
   Serial.write(PACKET_START);
   Serial.write(generated_value >> 8);
   Serial.write(generated_value);
-  Serial.write(generated_value_ch2 >> 8);
-  Serial.write(generated_value_ch2);
+  //Serial.write(generated_value_ch2 >> 8);
+  //Serial.write(generated_value_ch2);
   Serial.write(PACKET_END);
 #endif
 }

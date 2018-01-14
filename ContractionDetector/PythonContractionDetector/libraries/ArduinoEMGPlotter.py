@@ -48,6 +48,8 @@ class EMGProcessing:
         self.envoltoria = np.zeros(self.window_size, dtype='float')
         self.threshold = 0.25
         self.detection_sites = np.zeros(self.window_size, dtype='bool')
+        self.window = 100
+        self.weights = np.hamming(self.window) / (self.window / 2)
 
     def update_values(self):
         points_to_add = len(self.buffer)
@@ -65,8 +67,10 @@ class EMGProcessing:
 
         #self.envoltoria = \
         #   filtfilt(self.filter_params['b'], self.filter_params['a'], self.hilbert_retificado)
+        #self.envoltoria = \
+        #    EMGProcessing.do_moving_average(self.hilbert_retificado, 128)*3.8
         self.envoltoria = \
-            EMGProcessing.do_moving_average(self.hilbert_retificado, 128)*3.8
+            np.convolve(self.hilbert_retificado, self.weights, 'same') * 3.8
         # self.envoltoria = EMGProcessing.do_moving_average(self.hilbert_retificado,100)
         self.detection_sites = self.envoltoria > self.threshold
 
@@ -102,7 +106,7 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
         self.plotHandler.set_detection_visible(False)
         self.emg_value = 0
 
-        self.as_simple_as_possible = True
+        self.as_simple_as_possible = False
         #self.offset_values = np.zeros(128)
         self.offset_values = [0] * 1000
         #self.mva_values = np.zeros(128)
@@ -114,11 +118,12 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
 
     def _init_plotHandler(self, parent, app):
         self.plotHandler = EMGPlotHandler(qnt_points=4096, parent=parent, y_range=(-2.5, 2.5),
-                                          app=app, proc=None)
+                                          app=app, proc='hbt+btr')
 
     def consumer_function(self):
         if self.plotHandler.process_in_plotter:
             if self.arduinoHandler.data_waiting():
+                #print("help! i need")
                 self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
                 self.plotHandler.emg_bruto.buffer.put(self.emg_value)
         elif self.as_simple_as_possible:
@@ -143,6 +148,7 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
                 self.plotHandler.envoltoria.buffer.put(env*3.83)
         else:
             if self.arduinoHandler.data_waiting():
+                # print "hello i'm here"
                 points_to_process = self.arduinoHandler.buffer_acquisition.qsize()
                 for n in range(points_to_process):
                     self.emg_value = self.arduinoHandler.buffer_acquisition.get()*5.0/1024.0 - 2.5
