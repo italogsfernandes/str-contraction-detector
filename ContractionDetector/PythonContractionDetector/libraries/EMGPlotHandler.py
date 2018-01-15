@@ -56,12 +56,9 @@ class EMGPlotHandler(PyQtGraphHandler):
         else:
             self.process_in_plotter = False
 
-        if self.proc == "hbt+btr": # Hilbert + butterworth
-            # Processing:
-            self.detection_sites = []
-            self.b, self.a = butter_lowpass(7, 1000, order=2)
-        if self.proc == "mva": #Only moving average
-            pass
+        # Processing:
+        self.detection_sites = []
+        self.b, self.a = butter_lowpass(7, 1000, order=2)
 
     def set_detection_visible(self, visible):
         if not visible:
@@ -89,14 +86,19 @@ class EMGPlotHandler(PyQtGraphHandler):
         if self.proc == 'hbt+btr':
             self.hilbert.values = fftpack.hilbert(self.emg_bruto.values)
             self.hilbert_retificado.values = np.abs(self.hilbert.values)
-            #self.envoltoria.values = filtfilt(self.b, self.a, self.hilbert_retificado.values)
-            self.envoltoria.values = np.convolve(self.hilbert_retificado.values,
-                                                 np.hamming(100) / (100.0 / 2.0)
-                                                 , 'same') * 3.8
+            self.envoltoria.values = filtfilt(self.b, self.a, self.hilbert_retificado.values)
+            #self.envoltoria.values = np.convolve(self.hilbert_retificado.values,
+            #                                    np.hamming(100) / (100.0 / 2.0)
+            #                                     , 'same') * 3.8
             #self.b, self.a, self.hilbert_retificado.values)
         if self.proc == 'mva':
             self.hilbert.values = self.emg_bruto
+
         self.detection_sites = self.envoltoria.values > self.threshold.values[0]
+
+        self.envoltoria.values = list(self.envoltoria.values)
+        self.hilbert_retificado.values = list(self.hilbert_retificado.values)
+        self.hilbert.values = list(self.hilbert.values)
 
         time_inicio = self.qnt_points - 1
         for n in range(1, self.qnt_points):

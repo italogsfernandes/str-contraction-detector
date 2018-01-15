@@ -286,10 +286,45 @@
      <string>Help</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuConfiguracoes">
+    <property name="title">
+     <string>Configurações</string>
+    </property>
+    <addaction name="actionProcessamento"/>
+   </widget>
    <addaction name="menuArquivo"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuConfiguracoes"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSimples">
+   <property name="text">
+    <string>Processamento</string>
+   </property>
+  </action>
+  <action name="actionIn_Plotter">
+   <property name="text">
+    <string>In Plotter</string>
+   </property>
+  </action>
+  <action name="actionThread">
+   <property name="text">
+    <string>Thread</string>
+   </property>
+  </action>
+  <action name="actionDesativado">
+   <property name="text">
+    <string>Desativado</string>
+   </property>
+  </action>
+  <action name="actionProcessamento">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Processamento</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
