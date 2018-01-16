@@ -39,6 +39,19 @@ def butter_lowpass(cutoff, fs, order=5):
 
 class EMGPlotHandler(PyQtGraphHandler):
     def __init__(self, qnt_points=2000, parent=None, y_range=(-1, 1), app=None, proc=None):
+        """
+        Handles a plotwidget (library: PyQtGraph) as a continuous plot.
+        It allows a simple way to plot points as if they where scrolling in the screen.
+        It has all the emg series needed.
+        See the code of the test function in this file for an example.
+        :param qnt_points: The amount of points that your plot will have.
+        :param parent: The parent of the plotwidget (QObject).
+        :param y_range: A tuple telling the minimum and maximum value for the y-axis.
+        :param app: The QAplication that holds this widget - Not essential, but if it's defined, it
+        will try to force a update in the whole window every plot interaction.
+        :param proc: Must be 'hbt+env' or 'mva' or None.
+        If defined, the emg data will be processed in plotter thread.
+        """
         PyQtGraphHandler.__init__(self, qnt_points, parent, y_range, app)
 
         self.plotWidget.removeItem(self.series.curve)
@@ -65,15 +78,30 @@ class EMGPlotHandler(PyQtGraphHandler):
         self.b, self.a = butter_lowpass(7, 1000, order=2)
 
     def set_detection_visible(self, visible):
+        """
+        Adds or removes the curve of the parent plot widget.
+        :param visible: Boolean telling that the curve should appear (True) or hide (False).
+        """
         if not visible:
             self.plotWidget.removeItem(self.contraction_region)
         else:
             self.plotWidget.addItem(self.contraction_region)
 
     def set_threshold(self, th_value):
+        """
+        Sets a new threshold value.
+        :param th_value:
+        """
         self.threshold.values = [th_value] * self.qnt_points
 
     def update(self):
+        """
+        This method is called automatically, you should not call it by yourself.
+
+        It verifies how many points are in the buffer,
+        then remove one by one, and add to the auxiliary vector.
+        This auxiliary vector is set as the data source of the curve in the plot.
+        """
         self.emg_bruto.update_values()
         if self.process_in_plotter:
             self.process_data()
@@ -87,23 +115,37 @@ class EMGPlotHandler(PyQtGraphHandler):
             self.plotWidget.setTitle('<font color="red">%0.2f fps</font>' % self.fps)
 
     def process_data(self):
-        if self.proc == 'hbt+btr':
+        """
+        If the flag process in plotter is set to True.
+        This function is called every plot update.
+        It will process the data stored in the emg_bruto curve aiming to obtain all the other curves.
+        """
+        if 'hbt+' in self.proc:  # Filter the emg with Hilbert
             self.hilbert.values = fftpack.hilbert(self.emg_bruto.values)
-            self.hilbert_retificado.values = np.abs(self.hilbert.values)
-            self.envoltoria.values = filtfilt(self.b, self.a, self.hilbert_retificado.values)
-            #self.envoltoria.values = np.convolve(self.hilbert_retificado.values,
-            #                                    np.hamming(100) / (100.0 / 2.0)
-            #                                     , 'same') * 3.8
-            #self.b, self.a, self.hilbert_retificado.values)
-        if self.proc == 'mva':
+        elif 'mva+' in self.proc: # Or with subtracting the average
+            self.hilbert.values =\
+                self.emg_bruto.values -\
+                np.convolve(self.emg_bruto.values,
+                            np.repeat(1, 100) / (100.0 / 2.0),
+                            'same')
+        else:  # Or simply do not filter the emg
             self.hilbert.values = self.emg_bruto
 
+        # With the filtered emg, calculates the its absolute value
+        self.hilbert_retificado.values = np.abs(self.hilbert.values)
+
+        if '+btr' in self.proc:  # Obtains the env by a low pass filter with butter response
+            self.envoltoria.values = filtfilt(self.b, self.a, self.hilbert_retificado.values)
+        elif '+ham_conv' in self.proc:  # Obtains the env by a convolution with a hamming window
+            self.envoltoria.values = np.convolve(self.hilbert_retificado.values,
+                                                 np.hamming(100) / (100.0 / 2.0),
+                                                 'same')
+        elif '+mva' in self.proc:  # Obtains the env by a convolution with a square window (moving average)
+            self.envoltoria.values = np.convolve(self.hilbert_retificado.values,
+                                                 np.repeat(1, 100) / (100.0 / 2.0),
+                                                 'same')
+        # Calculo dos locais em contração:
         self.detection_sites = self.envoltoria.values > self.threshold.values[0]
-
-        self.envoltoria.values = list(self.envoltoria.values)
-        self.hilbert_retificado.values = list(self.hilbert_retificado.values)
-        self.hilbert.values = list(self.hilbert.values)
-
         time_inicio = self.qnt_points - 1
         for n in range(1, self.qnt_points):
             #subida
@@ -112,6 +154,10 @@ class EMGPlotHandler(PyQtGraphHandler):
             if not self.detection_sites[n] and self.detection_sites[n - 1]:
                 time_end = n
                 self.contraction_region.setRegion([time_inicio, time_end])
+        # Converte de np.array para list para garantir compatibilidade com outros metodos de processamento
+        self.envoltoria.values = list(self.envoltoria.values)
+        self.hilbert_retificado.values = list(self.hilbert_retificado.values)
+        self.hilbert.values = list(self.hilbert.values)
 
 
 def test():
@@ -137,7 +183,7 @@ def test():
         emg_bruto = np.sin(2*np.pi*y_value)+0.4*np.sin(20*2*np.pi*y_value)
         plot_handler.emg_bruto.buffer.put(emg_bruto+1)
 
-    from ThreadHandler import InfiniteTimer
+    from libraries.ThreadHandler import InfiniteTimer
     timer = InfiniteTimer(0.001, generate_point)
     timer.start()
 

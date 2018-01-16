@@ -19,8 +19,7 @@ import sys
 from PyQt4.QtGui import *
 from PyQt4 import QtCore
 from PyQt4.QtCore import SIGNAL
-from libraries.QtArduinoPlotter import QtArduinoPlotter
-from libraries.ArduinoEMGPlotter import ArduinoEMGPlotter
+from ArduinoEMGPlotter import ArduinoEMGPlotter
 from views import base_qt4 as base
 from views import config_processamento_qt4 as config_window
 

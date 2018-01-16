@@ -10,28 +10,21 @@
 # ------------------------------------------------------------------------------
 # Description:
 # ------------------------------------------------------------------------------
-# import sys
-# sys.path.append('../libraries')
-from libraries.ArduinoHandler import ArduinoHandler
-from libraries.ThreadHandler import ThreadHandler, InfiniteTimer
-
-from libraries.EMGPlotHandler import EMGPlotHandler
+from EMGPlotHandler import EMGPlotHandler
 from libraries.QtArduinoPlotter import QtArduinoPlotter
-
 # ------------------------------------------------------------------------------
-
 import numpy as np
 import scipy.fftpack as fftpack
 from scipy.signal import butter, lfilter, freqz, filtfilt
-import sys
-if sys.version_info.major == 2:
-    from Queue import Queue
-else:
-    from queue import Queue
 from collections import deque
+# ------------------------------------------------------------------------------
+
 
 class EMGProcessing:
     def __init__(self):
+        """
+        Routines for processing a emg raw data.
+        """
         self.window_size = 256
         self.fs = 1000
         self.filter_params = dict()
@@ -52,6 +45,9 @@ class EMGProcessing:
         self.weights = np.hamming(self.window) / (self.window / 2)
 
     def update_values(self):
+        """
+        Removes the points of the emg buffer, process it
+        """
         points_to_add = len(self.buffer)
         if points_to_add > 0:
             for n in range(points_to_add):  # obtains the new values
@@ -61,6 +57,9 @@ class EMGProcessing:
             self.do_process()
 
     def do_process(self):
+        """
+        Process the data
+        """
         #self.hilbert = fftpack.hilbert(self.emg_bruto)#+self.emg_bruto[::-1])
         self.hilbert = self.emg_bruto - EMGProcessing.do_moving_average(self.emg_bruto, 5) #+self.emg_bruto[::-1])
         self.hilbert_retificado = np.abs(self.hilbert)
@@ -118,10 +117,19 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
         self.process_in_thread = False
 
     def get_buffers_status(self, separator):
+        """
+        Returns a string like:
+            Serial:    4/1024 - Acq:    1/1024 - Plot:  30/1024
+        :param separator: Separates the strings, example ' - ', ' | ', '\n'
+        :return: A string containing the status of all the buffers involved in the acquisition and plotting.
+        """
         return self.arduinoHandler.get_buffers_status(separator) + separator + \
                self.plotHandler.emg_bruto.get_buffers_status()
 
     def _init_plotHandler(self, parent, app):
+        """
+        Only initializes the plotHandler object. It is set as a method to allow override.
+        """
         self.plotHandler = EMGPlotHandler(qnt_points=4096, parent=parent, y_range=(-2.5, 2.5),
                                           app=app, proc=None)
         self.plotHandler.process_in_plotter = False
