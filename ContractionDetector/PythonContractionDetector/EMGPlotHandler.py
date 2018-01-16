@@ -13,23 +13,27 @@
 # import sys
 # sys.path.append('../libraries')
 import pyqtgraph as pg
-from PyQtGraphHandler import PyQtGraphHandler, PyQtGraphSeries
+from libraries.PyQtGraphHandler import PyQtGraphHandler, PyQtGraphSeries
 # ------------------------------------------------------------------------------
 # Processing:
 import numpy as np
 import scipy.fftpack as fftpack
 from scipy.signal import butter, lfilter, freqz, filtfilt
 
+
 def butter_lowpass(cutoff, fs, order=5):
+    """
+    Generates the params of a digital low-pass filter with butterworth response.
+    :param cutoff: Cutoff frequency in [Hz]. This frequency will be at -3db.
+    :param fs: Sampling frequency, necessary for the nyquist.
+    :param order: The order of the filter.
+    :return: The denominator and numerator values of the transfer function as a tuple (b,a).
+    """
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
     return b, a
 
-def butter_lowpass_filter(data, cutoff, fs, order=5):
-    b, a = butter_lowpass(cutoff, fs, order=order)
-    y = lfilter(b, a, data)
-    return y
 # ------------------------------------------------------------------------------
 
 

@@ -12,11 +12,11 @@
 # ------------------------------------------------------------------------------
 # import sys
 # sys.path.append('../libraries')
-from ArduinoHandler import ArduinoHandler
-from ThreadHandler import ThreadHandler, InfiniteTimer
+from libraries.ArduinoHandler import ArduinoHandler
+from libraries.ThreadHandler import ThreadHandler, InfiniteTimer
 
-from EMGPlotHandler import EMGPlotHandler
-from QtArduinoPlotter import QtArduinoPlotter
+from libraries.EMGPlotHandler import EMGPlotHandler
+from libraries.QtArduinoPlotter import QtArduinoPlotter
 
 # ------------------------------------------------------------------------------
 
@@ -152,12 +152,12 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
 
     def consumer_function(self):
         if self.process_in_plotter:
-            if self.arduinoHandler.data_waiting():
+            if self.arduinoHandler.data_waiting:
                 #print("help! i need")
                 self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
                 self.plotHandler.emg_bruto.buffer.put(self.emg_value)
         elif self.process_simple_way:
-            if self.arduinoHandler.data_waiting():
+            if self.arduinoHandler.data_waiting:
                 self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
                 #self.offset_values = np.roll(self.offset_values, -1)
                 #self.offset_values[:-1] = self.offset_values[1:]
@@ -177,7 +177,7 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
                 self.plotHandler.hilbert_retificado.buffer.put(hbt_ret)
                 self.plotHandler.envoltoria.buffer.put(env*3.83)
         elif self.process_in_thread:
-            if self.arduinoHandler.data_waiting():
+            if self.arduinoHandler.data_waiting:
                 # print "hello i'm here"
                 points_to_process = self.arduinoHandler.buffer_acquisition.qsize()
                 for n in range(points_to_process):
@@ -192,7 +192,7 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
                     self.plotHandler.hilbert_retificado.buffer.put(self.process.hilbert_retificado[index_out])
                     self.plotHandler.envoltoria.buffer.put(self.process.envoltoria[index_out])
         else:
-            if self.arduinoHandler.data_waiting():
+            if self.arduinoHandler.data_waiting:
                 self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
                 self.plotHandler.emg_bruto.buffer.put(self.emg_value)
 
