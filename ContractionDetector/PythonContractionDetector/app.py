@@ -8,7 +8,7 @@
 # Contact: italogsfernandes@gmail.com
 # Git: www.github.com/italogfernandes
 # ------------------------------------------------------------------------------
-# Decription:
+# Description:
 # ------------------------------------------------------------------------------
 import sys
 
@@ -111,6 +111,7 @@ class ContractionDetector(QMainWindow, base.Ui_MainWindow):
 app = QApplication(sys.argv)
 setup_form = SetupApp()
 form = ContractionDetector()
+
 
 def main():
     form.show()

@@ -204,6 +204,7 @@ class ArduinoEMGPlotter(QtArduinoPlotter):
                 self.emg_value = self.arduinoHandler.buffer_acquisition.get() * 5.0 / 1024.0 - 2.5
                 self.plotHandler.emg_bruto.buffer.put(self.emg_value)
 
+
 def test():
     import sys
     from PyQt4 import QtGui
