@@ -18,6 +18,31 @@ from threading import Event
 
 
 class ThreadHandler:
+    """
+    Handles a Thread Object in a way to call a worker function
+    repeatedly.
+    
+    Parameters
+    ----------
+    worker : function
+        The function to be called repeatedly
+    on_end_function : function
+        If defined, it will be called on the end of the thread.
+
+    Example
+    -------
+    Creates a function to be called.
+    >> def my_function():
+    ...    print('Hello')
+    Instantiate ThreadHandler Object
+    >> my_thread_handler = ThreadHandler(my_function)
+    Starts the thread:
+    >> my_thread_handler.start()
+    Output:
+    >> Hello
+    >> Hello
+    ...
+    """
     def __init__(self, worker=None, on_end_function=None):
         self.thread = Thread(target=self.run)
         self.worker = worker
@@ -27,23 +52,81 @@ class ThreadHandler:
         self.isFinished = False
 
     def start(self):
-        self.isAlive = True
-        self.isRunning = True
-        self.thread.start()
-        self.isFinished = False
+        """
+        Starts to repeatedly call the worker function.
+        
+        This method assigns a new Thread Object to the thread
+        (allowing to be called more than once).
+        It actives the flags isAlive and isRunning,
+        calls the start method of the ThreadObject and
+        sets the isFinished flag to False.
+        
+        Only works if the flag isAlive is False.
+        
+        See Also
+        --------
+        pause, resume, stop
+        """
+        if not self.isAlive:
+            self.thread = Thread(target=self.run)
+            self.isAlive = True
+            self.isRunning = True
+            self.thread.start()
+            self.isFinished = False
 
     def pause(self):
+        """
+        Pauses the call of the worker function.
+        
+        This method sets the isRunning flag to False.
+        
+        See Also
+        --------
+        resume, start, stop
+        """
         self.isRunning = False
 
     def resume(self):
+        """
+        If the calling of the worker if paused,
+        this method resumes the calling.
+        
+        This method sets the isRunning flag to True.
+        
+        See Also
+        --------
+        pause, start, stop
+        """
         self.isRunning = True
 
     def stop(self):
+        """
+        Stops the calling of the worker function.
+        Letting the thread to reach its end.
+        
+        This method sets the isAlive flag to False.
+        Also sets the isRunning flag to False.
+        
+        See Also
+        --------
+        pause, start, stop
+        """
         self.isAlive = False
         self.isRunning = False
-        self.thread = Thread(target=self.run)
 
     def run(self):
+        """
+        This is the target of the Thread Object,
+        
+        Do not call it by yourself, it is supposed to run
+        in a separated Thread.
+        
+        It consists of a loop that calls the worker function
+        repeatedly if the isRunning Flag is active. When the
+        isAlive flag is set to False, the loop will not
+        repeat, is there is a on_end_function set it will
+        be called, after it the Thread will end.
+        """
         while self.isAlive:
             if self.isRunning:
                 if self.worker is not None:
@@ -80,6 +163,18 @@ class InfiniteTimer(ThreadHandler):
         self.waiter = Event()
 
     def run(self):
+        """
+        This is the target of the Thread Object,
+
+        Do not call it by yourself, it is supposed to run
+        in a separated Thread.
+
+        It consists of a loop that calls the worker function
+        repeatedly if the isRunning Flag is active. When the
+        isAlive flag is set to False, the loop will not
+        repeat, is there is a on_end_function set it will
+        be called, after it the Thread will end.
+        """
         while self.isAlive:
             if self.isRunning:
                 self.waiter.wait(self.interval)

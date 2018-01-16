@@ -27,21 +27,38 @@ else:
 
 class PyQtGraphSeries:
     def __init__(self, parent=None, pen=(0, 0, 255), name="Curve"):
-        self.parent = parent
-        self.values = [0] * self.parent.qnt_points
+        """
+        Initializes a custom PyQtGraphCurve with a auxiliary vector of values and a buffer.
+        :param parent: The parent, it should contains a PyQtPlotWidget that will own this curve.
+        :param pen: The RGB color of the curve. Default is blue.
+        :param name: The name of the curve. Default is 'Curve'
+        """
+        self.parent = parent  # Save the parent in a attribute.
+        self.values = [0] * self.parent.qnt_points  # Initilizes a zero-filled vector
+        # Creates and adds the curve to the plotwidget.
         self.curve = self.parent.plotWidget.plot(self.values, pen=pen, name=name)
         self.visible = True
         self.buffer = Queue(self.parent.qnt_points)
-        #self.ptr1 = 0
 
     def set_visible(self, visible):
-        self.visible = visible
+        """
+        Adds or removes the curve of the parent plot widget.
+        :param visible: Boolean telling that the curve should appear (True) or hide (False).
+        """
+        self.visible = visible  # Save the argument as as attribute
         if not self.visible:
             self.parent.plotWidget.removeItem(self.curve)
         else:
             self.parent.plotWidget.addItem(self.curve)
 
     def update_values(self):
+        """
+        This method is called automatically, you should not call it by yourself.
+
+        It verifies how many points are in the buffer,
+        then remove one by one, and add to the auxiliary vector.
+        This auxiliary vector is set as the data source of the curve in the plot.
+        """
         points_to_add = self.buffer.qsize()
         if points_to_add > 0:
             for n in range(points_to_add):  # obtains the new values
@@ -50,22 +67,36 @@ class PyQtGraphSeries:
                 if len(self.values) > self.parent.qnt_points:
                     self.values.pop(0)
         if self.visible:
-            #self.ptr1 += points_to_add
             self.curve.setData(self.values)
-            #self.curve.setPos(0,self.ptr1)
 
     def get_buffers_status(self):
+        """
+        Returns a string like:
+            Plot:    4/1024
+        :return: A string containing the status of the plot buffer for this curve.
+        """
         return "Plot: %4d" % (self.buffer.qsize()) + '/' + str(self.buffer.maxsize)
 
 
 class PyQtGraphHandler:
     def __init__(self, qnt_points=10, parent=None, y_range=(-1, 1), app=None):
+        """
+        Handles a plotwidget (library: PyQtGraph) as a continuous plot.
+        It allows a simple way to plot points as if they where scrolling in the screen.
+
+        See the code of the test function in this file for an example.
+        :param qnt_points: The amount of points that your plot will have.
+        :param parent: The parent of the plotwidget (QObject).
+        :param y_range: A tuple telling the minimum and maximum value for the y-axis.
+        :param app: The QAplication that holds this widget - Not essential, but if it's defined, it
+        will try to force a update in the whole window every plot interaction.
+        """
         self.app = app
         self.__y_range = y_range
         self.qnt_points = qnt_points
 
         self.plotWidget = pg.PlotWidget(parent)
-        #self.plotWidget = pg.MultiPlotWidget(parent)
+        # self.plotWidget = pg.MultiPlotWidget(parent)
 
         self.series = PyQtGraphSeries(self, (0, 0, 255), "Values")
         self.configure_plot()
@@ -81,6 +112,13 @@ class PyQtGraphHandler:
         #    whenever it is full.
 
     def update(self):
+        """
+        This method is called automatically, you should not call it by yourself.
+
+        It removes the values of the curve buffers, and updates the curves.
+        If defined it can show the refresh rate (fps) in the plot title.
+        If defined it can force the app to update every time that this method runs.
+        """
         self.series.update_values()
 
         if self.show_fps:
@@ -91,6 +129,10 @@ class PyQtGraphHandler:
             self.app.processEvents()
 
     def calculate_fps(self):
+        """
+        If defined, it this method is called automatically by the update function.
+        Updating the value of the fps attribute.
+        """
         now = time()
         dt = now - self.lastTime
         self.lastTime = now
@@ -101,10 +143,27 @@ class PyQtGraphHandler:
             self.fps = self.fps * (1 - s) + (1.0 / dt) * s
 
     def configure_plot(self):
+        """
+        Configure the plot to:
+            Show a X,Y grid.
+            Sets the colors to a white background theme.
+            Sets the axis range and labels.
+        And set the title of the chart.
+        """
         self.configure_area()
         self.configure_title("Graph")
 
     def configure_area(self, x_title='Index', x_unit='',  y_title='Values', y_unit=''):
+        """
+        Configure the plot to:
+            Show a X,Y grid.
+            Sets the colors to a white background theme.
+            Sets the axis range and labels.
+        :param x_title: The x axis label.
+        :param x_unit: The unit names of the x values.
+        :param y_title: The y axis label.
+        :param y_unit: The unit names of the y axis.
+        """
         self.plotWidget.showGrid(True, True)
         # Colors:
         self.plotWidget.setBackgroundBrush(QBrush(QColor.fromRgb(255, 255, 255)))
@@ -119,6 +178,10 @@ class PyQtGraphHandler:
         self.plotWidget.setLabel('left', y_title, units=y_unit)
 
     def configure_title(self, title="Graph"):
+        """
+        Sets the title of the plot.
+        :param title: String to be showed in the title of this plot.
+        """
         self.plotWidget.setTitle('<font color="black"> %s </font>' % title)
 
 
