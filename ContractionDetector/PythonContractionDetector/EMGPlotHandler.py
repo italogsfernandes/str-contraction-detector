@@ -122,7 +122,7 @@ class EMGPlotHandler(PyQtGraphHandler):
         """
         if 'hbt+' in self.proc:  # Filter the emg with Hilbert
             self.hilbert.values = fftpack.hilbert(self.emg_bruto.values)
-        elif 'mva+' in self.proc: # Or with subtracting the average
+        elif 'mva+' in self.proc:  # Or with subtracting the average
             self.hilbert.values =\
                 self.emg_bruto.values -\
                 np.convolve(self.emg_bruto.values,
