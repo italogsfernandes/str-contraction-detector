@@ -13,7 +13,7 @@
 import serial
 import serial.tools.list_ports as serial_tools
 from ctypes import c_short
-from ThreadHandler import ThreadHandler, InfiniteTimer
+from .ThreadHandler import ThreadHandler, InfiniteTimer
 import sys
 if sys.version_info.major == 2:
     from Queue import Queue

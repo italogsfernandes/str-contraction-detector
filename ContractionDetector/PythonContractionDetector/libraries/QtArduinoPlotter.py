@@ -10,9 +10,9 @@
 # ------------------------------------------------------------------------------
 # Description:
 # ------------------------------------------------------------------------------
-from ThreadHandler import ThreadHandler, InfiniteTimer
-from ArduinoHandler import ArduinoHandler
-from PyQtGraphHandler import PyQtGraphHandler
+from .ThreadHandler import ThreadHandler, InfiniteTimer
+from .ArduinoHandler import ArduinoHandler
+from .PyQtGraphHandler import PyQtGraphHandler
 # ------------------------------------------------------------------------------
 
 

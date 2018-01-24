@@ -13,15 +13,18 @@
 import sys
 
 # PyQt5
-# from PyQt5.QtWidgets import *
-# from views import base_qt5 as base
+from PyQt5.QtWidgets import *
+from views import base_qt5 as base
+from PyQt5 import QtCore
+#from PyQt5.QtCore import SIGNAL
+
 # PyQt4
-from PyQt4.QtGui import *
-from PyQt4 import QtCore
-from PyQt4.QtCore import SIGNAL
+#from PyQt4.QtGui import *
+#from PyQt4 import QtCore
+#from PyQt4.QtCore import SIGNAL
 from ArduinoEMGPlotter import ArduinoEMGPlotter
-from views import base_qt4 as base
-from views import config_processamento_qt4 as config_window
+#from views import base_qt4 as base
+from views import config_processamento_qt5 as config_window
 
 # ------------------------------------------------------------------------------
 
@@ -30,10 +33,12 @@ class SetupApp(QMainWindow, config_window.Ui_windowConfig):
     def __init__(self, parent=None):
         super(SetupApp, self).__init__(parent)
         self.setupUi(self)
+        # Define a new signal called 'trigger' that has no arguments.
+        #self.trigger = QtCore.pyqtSignal()
         self.setup_signals_connections()
         self.tipos_de_processamento = ['Desativado', 'Simples', 'Plotter', 'Thread']
         self.populate_cb()
-
+		
     def setup_signals_connections(self):
         self.comboBox.currentIndexChanged.connect(self.setup_changed)
 
@@ -47,7 +52,7 @@ class SetupApp(QMainWindow, config_window.Ui_windowConfig):
         proc = self.comboBox.itemText(self.comboBox.currentIndex())
         # print("Setup Changed to:")
         # print(proc)
-        self.emit(SIGNAL("proc_changed(QString)"), proc)
+        #self.trigger.emit(SIGNAL("proc_changed(QString)"), proc)
 
     def closeEvent(self, q_close_event):
         super(self.__class__, self).closeEvent(q_close_event)
@@ -68,9 +73,10 @@ class ContractionDetector(QMainWindow, base.Ui_MainWindow):
         self.cb_emg.toggle()
         self.sl_threshould.setValue(0.25)
         self.sl_threshould_value_changed(10)
+        self.proc_changed("Desativado")
 
     def setup_signals_connections(self):
-        self.actionProcessamento.triggered.connect(self.processamento_clicked)
+        #self.actionProcessamento.triggered.connect(self.processamento_clicked)
         self.btn_start.clicked.connect(self.btn_start_clicked)
         self.btn_calib.clicked.connect(self.btn_calib_clicked)
         self.sl_threshould.valueChanged.connect(self.sl_threshould_value_changed)
@@ -80,7 +86,7 @@ class ContractionDetector(QMainWindow, base.Ui_MainWindow):
         self.cb_env.toggled.connect(lambda x: self.emg_app.plotHandler.envoltoria.set_visible(x))
         self.cb_lim.toggled.connect(lambda x: self.emg_app.plotHandler.threshold.set_visible(x))
         self.cb_det.toggled.connect(lambda x: self.emg_app.plotHandler.set_detection_visible(x))
-        self.connect(setup_form, SIGNAL("proc_changed(QString)"), self.proc_changed)
+        #self.connect(setup_form, SIGNAL("proc_changed(QString)"), self.proc_changed)
 
     def proc_changed(self, new_proc):
         print(new_proc)

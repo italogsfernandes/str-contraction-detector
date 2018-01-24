@@ -13,7 +13,7 @@
 from pyqtgraph.Qt import QtCore
 import pyqtgraph as pg
 from pyqtgraph.ptime import time
-from PyQt4.QtGui import QBrush, QColor, QPen
+from PyQt5.QtGui import QBrush, QColor, QPen
 from numpy import clip
 
 import sys
