@@ -10,22 +10,25 @@
 # ------------------------------------------------------------------------------
 # Description:
 # ------------------------------------------------------------------------------
-import sys
-
-# PyQt5
-from PyQt5.QtWidgets import *
-from views import base_qt5 as base
-from PyQt5 import QtCore
-#from PyQt5.QtCore import SIGNAL
-
-# PyQt4
-#from PyQt4.QtGui import *
-#from PyQt4 import QtCore
-#from PyQt4.QtCore import SIGNAL
 from ArduinoEMGPlotter import ArduinoEMGPlotter
-#from views import base_qt4 as base
-from views import config_processamento_qt5 as config_window
 
+import sys
+if sys.version_info.major == 3:
+    # PyQt5
+    from PyQt5.QtWidgets import *
+    from views import base_qt5 as base
+    from PyQt5 import QtCore
+    # from PyQt5.QtCore import SIGNAL
+    from views import config_processamento_qt5 as config_window
+elif sys.version_info.major == 2:
+    # PyQt4
+    from PyQt4.QtGui import *
+    from views import base_qt4 as base
+    from PyQt4 import QtCore
+    from PyQt4.QtCore import SIGNAL
+    from views import config_processamento_qt4 as config_window
+else:
+    print("Versao do python nao suportada")
 # ------------------------------------------------------------------------------
 
 
@@ -38,7 +41,7 @@ class SetupApp(QMainWindow, config_window.Ui_windowConfig):
         self.setup_signals_connections()
         self.tipos_de_processamento = ['Desativado', 'Simples', 'Plotter', 'Thread']
         self.populate_cb()
-		
+
     def setup_signals_connections(self):
         self.comboBox.currentIndexChanged.connect(self.setup_changed)
 
