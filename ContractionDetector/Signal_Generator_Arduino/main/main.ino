@@ -27,7 +27,7 @@
 #define PACKET_START  '$'
 #define PACKET_END    '\n'
 #define PIN_ADC A0
-#define PIN_ADC2 A1
+
 
 ///////////
 //Timers //
@@ -56,9 +56,7 @@
 //Variaveis globais //
 //////////////////////
 SignalGenerator_t my_generator(PIN_ADC);
-SignalGenerator_t my_generator_ch2(PIN_ADC2);
 uint16_t generated_value;
-uint16_t generated_value_ch2;
 
 //////////////////
 //Main Function //
@@ -69,13 +67,6 @@ void setup() {
   my_generator.setOffset(512);
   my_generator.setAmplitude(512);
   my_generator.setWaveform(EMG_WAVE);
-
-  my_generator_ch2.setOffset(512);
-  my_generator_ch2.setAmplitude(512);
-  my_generator_ch2.setWaveform(RAMP_WAVE);
-  for (int i = 0; i < 250; i++) { // Gerando um atraso de 180º
-    my_generator_ch2.generate_value();
-  }
 
   SETUP_TIMER();
   START_TIMER();
@@ -91,20 +82,15 @@ void loop() {
 void timerDataAcq() {
   //Getting the value
   generated_value = (uint16_t) my_generator.generate_value();
-  generated_value_ch2 = (uint16_t) my_generator_ch2.generate_value();
 
   //Sending the value
 #ifdef PLOTTER_SERIAL
   Serial.print(generated_value);
-  //Serial.print("\t");
-  //Serial.print(generated_value_ch2);
   Serial.println();
 #else
   Serial.write(PACKET_START);
   Serial.write(generated_value >> 8);
   Serial.write(generated_value);
-  //Serial.write(generated_value_ch2 >> 8);
-  //Serial.write(generated_value_ch2);
   Serial.write(PACKET_END);
 #endif
 }
