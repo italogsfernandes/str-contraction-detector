@@ -36,7 +36,8 @@ class ArduinoConstants:
     PACKET_SIZE = 4
     PACKET_START = '$'
     PACKET_END = '\n'
-    MANUFACTURER = 'Arduino (www.arduino.cc)'
+    # MANUFACTURER = 'Arduino (www.arduino.cc)'
+    MANUFACTURER = 'STM32 Virtual ComPort'
     DUE_description = 'Arduino Due Prog. Port'
     UNO_description = 'ttyACM1'
     HINA_NANO_description = 'USB2.0-Serial'
@@ -72,7 +73,7 @@ class ArduinoHandler:
         self.serial_tools_obj = [s for s in serial_tools.comports() if s.device == port_name][0]
         self.serialPort = serial.Serial()
         self.serialPort.port = port_name
-        self.serialPort.baudrate = baudrate
+        self.serialPort.baudrate = 115200
         self.thread_acquisition = ThreadHandler(self.acquire_routine, self.close)
         self.buffer_acquisition = Queue(1024)
 
@@ -132,6 +133,8 @@ class ArduinoHandler:
         if len(serial_ports) == 0:
             return ""
         if len(serial_ports) == 1:
+            return serial_ports[0].device
+        if len(serial_ports) == 2:
             return serial_ports[0].device
         for serial_port_found in serial_ports:
             if serial_port_found.manufacturer == ArduinoConstants.MANUFACTURER:
